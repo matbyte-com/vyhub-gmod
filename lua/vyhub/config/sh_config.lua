@@ -1,0 +1,1 @@
+VyHub.Config.debug = true
