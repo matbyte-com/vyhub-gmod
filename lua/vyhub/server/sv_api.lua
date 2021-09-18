@@ -9,16 +9,18 @@ function VyHub.API:request(method, url, path_params, query, headers, body, type,
     end
 
     if istable(body) then
-        body = util.TableToJSON(body)
+        body = json.encode(body)
     end
 
     success_func = function(code, body, headers)
-        result = util.JSONToTable(body)
+        result = json.decode(body)
 
         if code >= 200 and code < 300 then
             VyHub:msg(string.format("HTTP %s %s: %s", method, url, code), "debug")
 
             if success != nil then
+                // VyHub:msg(string.format("Response: %s", body), "debug")
+
                 success(code, result, headers)
             end
         else
@@ -94,6 +96,8 @@ hook.Add("vyhub_loading_finish", "vyhub_api_vyhub_loading_finish", function()
 
     VyHub.API:get("/openapi.json", nil, nil, function(code, result, headers)
         VyHub:msg(string.format("Connection to API %s version %s successful!", result.info.title, result.info.version), "success")
+
+        VyHub.ready = true
 
         hook.Run("vyhub_api_ready")
     end, function()

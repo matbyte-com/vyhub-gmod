@@ -17,7 +17,7 @@ hook.Add("vyhub_api_ready", "vyhub_main_vyhub_api_ready", function ()
 end)
 
 hook.Add("vyhub_api_failed", "vyhub_main_vyhub_api_failed", function ()
-    local server = VyHub.Cache:get("server", 172800)
+    local server = VyHub.Cache:get("server", 604800)
 
     if server != nil then
         VyHub.server = server

@@ -7,7 +7,7 @@ VyHub.Server.extra_defaults = {
 }
 
 function VyHub.Server:get_extra(key)
-    if VyHub.server.extra[key] != nil then
+    if VyHub.server.extra != nil and VyHub.server.extra[key] != nil then
         return VyHub.server.extra[key]
     end
 
@@ -22,7 +22,7 @@ function VyHub.Server:update_status()
         is_alive = true,
     }
 
-    VyHub:msg(string.format("Updating status: %s", util.TableToJSON(data)), "debug")
+    VyHub:msg(string.format("Updating status: %s", json.encode(data)), "debug")
 
     VyHub.API:patch(
         '/server/%s',

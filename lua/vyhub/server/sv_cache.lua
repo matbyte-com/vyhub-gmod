@@ -7,7 +7,7 @@ function VyHub.Cache:save(key, value)
     }
 
     local filename = string.format("vyhub/%s.json", key)
-    local json = util.TableToJSON(data)
+    local json = json.encode(data)
 
     VyHub:msg("Write " .. filename .. ": " .. json)
 
@@ -21,7 +21,7 @@ function VyHub.Cache:get(key, max_age)
         return nil
     end
 
-    local data = util.JSONToTable(file.Read(path, "data"))
+    local data = json.decode(file.Read(path, "data"))
 
     if istable(data) and data.timestamp and data.data then
         if max_age != nil and os.time() - data.timestamp > max_age then

@@ -1,6 +1,7 @@
 
 VyHub = VyHub or {}
 VyHub.Config = VyHub.Config or {}
+VyHub.ready = false
 
 local vyhub_root = "vyhub"
 
@@ -23,13 +24,21 @@ VyHub:msg("Initializing...")
 hook.Run("vyhub_loading_start")
 
 if SERVER then
-    --Config Files
+    -- libs
+    VyHub:msg("Loading lib files...")
+    local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        AddCSLuaFile( vyhub_root .. "/lib/" .. file )
+        include( vyhub_root .. "/lib/" .. file )
+    end
+
+    -- Config Files
     VyHub:msg("Loading config files...")
     include( vyhub_root .. '/config/sv_config.lua' )
     include( vyhub_root .. '/config/sh_config.lua' )
     AddCSLuaFile( vyhub_root .. "/config/sh_config.lua" )
 
-    --Shared Files
+    -- Shared Files
     VyHub:msg("Loading shared files...")
     local files = file.Find( vyhub_root .."/shared/*.lua", "LUA" )
     for _, file in ipairs( files ) do
@@ -37,7 +46,7 @@ if SERVER then
         include( vyhub_root .. "/shared/" .. file )
     end
 
-    --Server Files
+    -- Server Files
     VyHub:msg("Loading server files...")
     local files = file.Find( vyhub_root .. "/server/*.lua", "LUA" )
     for _, file in ipairs( files ) do
@@ -50,6 +59,13 @@ if SERVER then
 end
 
 if CLIENT then
+    -- libs
+    VyHub:msg("Loading lib files...")
+    local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        include( vyhub_root .. "/lib/" .. file )
+    end
+
     --Config Files
     VyHub:msg("Loading config files...")
     local files = file.Find( vyhub_root .."/config/*.lua", "LUA" )
