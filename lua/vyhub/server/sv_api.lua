@@ -3,13 +3,13 @@ VyHub.API = VyHub.API or {}
 local content_type = "application/json; charset=utf-8"
 
 
-function VyHub.API:request(method, url, path_params, query, headers, body, type, success, failed)
+function VyHub.API:request(method, url, path_params, query, headers, request_body, type, success, failed)
     if path_params != nil then
         url = string.format(url, unpack(path_params))
     end
 
-    if istable(body) then
-        body = json.encode(body)
+    if istable(request_body) then
+        request_body = json.encode(request_body)
     end
 
     success_func = function(code, body, headers)
@@ -24,7 +24,7 @@ function VyHub.API:request(method, url, path_params, query, headers, body, type,
                 success(code, result, headers)
             end
         else
-            VyHub:msg(string.format("HTTP %s %s: %s %s", method, url, code, body), "error")
+            VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
 
             if failed != nil then
                 failed(code, result, headers)
@@ -33,7 +33,7 @@ function VyHub.API:request(method, url, path_params, query, headers, body, type,
     end
 
     failed_func = function(reason)
-        VyHub:msg(string.format("HTTP %s request to %s failed with reason '%s'.\nQuery: %s\nBody: %s", method, url, reason, query, body), "error")
+        VyHub:msg(string.format("HTTP %s request to %s failed with reason '%s'.\nQuery: %s\nBody: %s", method, url, reason, json.encode(query), request_body), "error")
 
         if failed != nil then
             failed(0, reason, {})
@@ -45,7 +45,7 @@ function VyHub.API:request(method, url, path_params, query, headers, body, type,
         url = url,
         parameters = query,
         headers = headers,
-        body = body,
+        body = request_body,
         type = type,
         success = success_func,
         failed = failed_func,

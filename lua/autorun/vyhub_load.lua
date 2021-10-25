@@ -3,6 +3,8 @@ VyHub = VyHub or {}
 VyHub.Config = VyHub.Config or {}
 VyHub.ready = false
 
+f = string.format
+
 local vyhub_root = "vyhub"
 
 function VyHub:msg(message, type)
@@ -14,6 +16,8 @@ function VyHub:msg(message, type)
 		MsgC("[VyHub] ", Color(255, 0, 0), message .. "\n")
 	elseif type == "neutral" then
 		MsgC("[VyHub] ", Color(255, 255, 255), message .. "\n")
+    elseif type == "warning" then
+		MsgC("[VyHub] ", Color(211, 120, 0), message .. "\n")
     elseif type == "debug" and VyHub.Config.debug then
 		MsgC("[VyHub] [Debug] ", Color(255, 255, 255), message .. "\n")
 	end
@@ -37,6 +41,18 @@ if SERVER then
     include( vyhub_root .. '/config/sv_config.lua' )
     include( vyhub_root .. '/config/sh_config.lua' )
     AddCSLuaFile( vyhub_root .. "/config/sh_config.lua" )
+
+    -- Language
+    VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
+    include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
+    AddCSLuaFile( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
+
+    --Client Files
+    VyHub:msg("Loading client files...")
+    local files = file.Find( vyhub_root .."/client/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        AddCSLuaFile( vyhub_root .."/client/" .. file )
+    end
 
     -- Shared Files
     VyHub:msg("Loading shared files...")
@@ -74,6 +90,10 @@ if CLIENT then
             include( vyhub_root .. "/config/" .. file )
         end
     end
+
+    -- Language
+    VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
+    include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
 
     --Client Files
     VyHub:msg("Loading client files...")

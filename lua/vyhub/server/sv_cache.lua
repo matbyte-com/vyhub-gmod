@@ -9,7 +9,7 @@ function VyHub.Cache:save(key, value)
     local filename = string.format("vyhub/%s.json", key)
     local json = json.encode(data)
 
-    VyHub:msg("Write " .. filename .. ": " .. json)
+    VyHub:msg("Write " .. filename .. ": " .. json, "debuga")
 
     file.Write(filename, json)
 end

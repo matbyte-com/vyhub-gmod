@@ -25,5 +25,9 @@ hook.Add("vyhub_api_failed", "vyhub_main_vyhub_api_failed", function ()
         VyHub:server_data_ready()
     else
         VyHub:msg("Could not find cached server data or cached data is too old. Please make sure that the server is able to reach the VyHub API.", "error")
+        
+        timer.Simple(60, function ()
+            hook.Run("vyhub_loading_finish")
+        end)
     end
 end)

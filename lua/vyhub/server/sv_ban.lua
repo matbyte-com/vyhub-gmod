@@ -1,6 +1,6 @@
 VyHub.Ban = VyHub.Ban or {}
 VyHub.Ban.ban_queue = VyHub.Ban.ban_queue or {}
-VyHub.Ban.unban_queue = VyHub.Ban.ban_queue or {}
+VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
 
 --[[
     ban_queue: Dict[...]
@@ -9,18 +9,30 @@ VyHub.Ban.unban_queue = VyHub.Ban.ban_queue or {}
         reason: str
         creator_steamid: str
         created_on: date
+        status: str
 
     unban_queue: List[steamid]
 ]]--
 
 
-function VyHub.Ban:check_player_banned(ply)
-    local bans = VyHub.bans[ply:SteamID64()]
-    local queued_bans = VyHub.Ban.ban_queue[ply:SteamID64()]
+function VyHub.Ban:check_player_banned(steamid)
+    local bans = VyHub.bans[steamid]
+    local queued_bans = VyHub.Ban.ban_queue[steamid]
 
     ban_exists = bans != nil and not table.IsEmpty(bans)
-    queued_ban_exists = queued_bans != nil and not table.IsEmpty(queued_bans)
-    queued_unban_exists = VyHub.Ban.unban_queue.HasValue(ply:SteamID64())
+
+    queued_ban_exists = false
+
+    if queued_bans != nil then
+        for _, ban in pairs(queued_bans) do
+            if ban != nil and ban.status == 'ACTIVE' then
+                queued_ban_exists = true 
+                break
+            end
+        end
+    end
+
+    queued_unban_exists = table.HasValue(VyHub.Ban.unban_queue, steamid)
 
     return (ban_exists or queued_ban_exists) and not queued_unban_exists
 end
@@ -34,23 +46,23 @@ function VyHub.Ban:kick_banned_players()
 end
 
 function VyHub.Ban:refresh()
-    VyHub.API:get("/server/bundle/%s/ban", { VyHub.server.serverbundle_id }, { active = true }, function(code, result)
+    VyHub.API:get("/server/bundle/%s/ban", { VyHub.server.serverbundle_id }, { active = "true" }, function(code, result)
         VyHub.bans = result
 
         VyHub.Cache:save("bans", VyHub.bans)
         
-        VyHub:msg(string.format("Found %s users with active bans.", #VyHub.bans), "debug")
+        VyHub:msg(string.format("Found %s users with active bans.", table.Count(VyHub.bans)), "debug")
 
         VyHub.Ban:kick_banned_players()
     end, function()
-        VyHub:msg(string.format("Could not refresh bans, trying to use cache.", #VyHub.bans), "error")
+        VyHub:msg("Could not refresh bans, trying to use cache.", "error")
 
         local result = VyHub.Cache:get("bans")
 
         if result != nil then
             VyHub.bans = result
 
-            VyHub:msg(string.format("Found %s users with cached active bans.", #VyHub.bans), "neutral")
+            VyHub:msg(string.format("Found %s users with cached active bans.", table.Count(VyHub.bans)), "neutral")
 
             VyHub.Ban:kick_banned_players()
         else
@@ -59,11 +71,13 @@ function VyHub.Ban:refresh()
     end)
 end
 
-
-
 function VyHub.Ban:handle_queue()
     local function failed_ban(steamid)
-        VyHub:msg(string.format("Could not send ban of user %s to API.", steamid), "error")
+        VyHub:msg(string.format("Could not send ban of user %s to API. Retrying..", steamid), "error")
+    end
+
+    local function failed_unban(steamid)
+        VyHub:msg(string.format("Could not send unban of user %s to API. Retrying..", steamid), "error")
     end
 
     if not table.IsEmpty(VyHub.Ban.ban_queue) then
@@ -82,13 +96,34 @@ function VyHub.Ban:handle_queue()
                                             user_id = user.id,
                                             creator_id = creator != nil and creator.id or nil,
                                             created_on = ban.created_on,
+                                            status = ban.status,
                                         }
 
-                                        VyHub.API:post('/ban', nil, data, function(code, result)
+                                        VyHub.API:post('/ban/', nil, data, function(code, result)
                                             VyHub.Ban.ban_queue[steamid][i] = nil
+                                            VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()
-                                        end, function(reason)
-                                            failed_ban(ban.user_steamid)
+                                        end, function(code, reason)
+                                            if code >= 400 and code < 500 then
+                                                msg = reason
+
+                                                error = string.format("Could not create ban for %s, aborting: %s", steamid, msg)
+
+                                                VyHub:msg(error, "error")
+
+                                                VyHub.Ban.ban_queue[steamid][i] = nil
+                                                VyHub.Ban:save_queues()
+
+                                                if data.creator_id != nil then
+                                                    ply = player.GetBySteamID64(data.creator_id)
+
+                                                    if IsValid(ply) then
+                                                        VyHub:print_chat(ply, error)
+                                                    end
+                                                end
+                                            else
+                                                failed_ban(ban.user_steamid)
+                                            end
                                         end)
                                     end
 
@@ -111,25 +146,43 @@ function VyHub.Ban:handle_queue()
                     end
                 else
                     VyHub.Ban.ban_queue[steamid] = nil
+                    VyHub.Ban:save_queues()
                 end
+            end
+        end
+    end
+
+    if not table.IsEmpty(VyHub.Ban.unban_queue) then
+        for i, steamid in pairs(VyHub.Ban.unban_queue) do
+            if VyHub.bans[steamid] != nil then
+                for i, ban in pairs(VyHub.bans[steamid]) do
+                    if ban != nil then
+                        VyHub.API:patch('/ban/%s', {ban.id}, { status = 'UNBANNED' }, function (code, reslt)
+                            VyHub.Ban.unban_queue[i] = nil
+                            VyHub.Ban:save_queues()
+                            VyHub.Ban:refresh()
+                        end, function (code, reason)
+                            failed_unban(steamid)
+                        end)
+                    end
+                end
+            else
+                VyHub.Ban.unban_queue[i] = nil
+                VyHub.Ban:save_queues()
             end
         end
     end
 end
 
 function VyHub.Ban:create(steamid, length, reason, creator_steamid)
-    local tz_wrong = os.date("%z")
-    local timezone = string.format("%s:%s", string.sub(tz_wrong, 1, 2), string.sub(tz_wrong, 3, 4))
-
     local data = {
         user_steamid = steamid,
         length = length * 60,
         reason = reason,
         creator_steamid = creator_steamid,
-        created_on = os.date("%Y-%m-%dT%H:%M:%S" .. timezone)
+        created_on = VyHub.Util:format_datetime(),
+        status = 'ACTIVE',
     }
-
-    PrintTable(data)
 
     if VyHub.Ban.ban_queue[steamid] == nil then
         VyHub.Ban.ban_queue[steamid] = {}
@@ -137,11 +190,40 @@ function VyHub.Ban:create(steamid, length, reason, creator_steamid)
 
     table.insert(VyHub.Ban.ban_queue[steamid], data)
 
+    VyHub.Ban:kick_banned_players()
+    VyHub.Ban:save_queues()
     VyHub.Ban:handle_queue()
+end
+
+function VyHub.Ban:unban(steamid, processor_steamid)
+    if VyHub.Ban.ban_queue[steamid] != nil then
+        for i, ban in pairs(VyHub.Ban.ban_queue[steamid]) do
+            if ban != nil and ban.status != 'UNBANNED' then
+                VyHub.Ban.ban_queue[steamid][i].status = 'UNBANNED'
+
+                VyHub:msg(string.format("Set status of queued ban of %s to UNBANNED.", steamid), 'neutral')
+            end
+        end
+    end
+
+    table.insert(VyHub.Ban.unban_queue, steamid)
+
+    VyHub.Ban:save_queues()
+    VyHub.Ban:handle_queue()
+
+    VyHub:msg(string.format("Unbanned user %s.", steamid), 'success')
+end
+
+function VyHub.Ban:save_queues()
+    VyHub.Cache:save("ban_queue", VyHub.Ban.ban_queue)
+    VyHub.Cache:save("unban_queue", VyHub.Ban.unban_queue)
 end
 
 hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
     VyHub.Ban:refresh()
+
+    VyHub.Ban.ban_queue = VyHub.Cache:get("ban_queue") or {}
+    VyHub.Ban.unban_queue = VyHub.Cache:get("unban_queue") or {}
 
     timer.Create("vyhub_ban_refresh", 60, 0, function()
         VyHub.Ban:refresh()

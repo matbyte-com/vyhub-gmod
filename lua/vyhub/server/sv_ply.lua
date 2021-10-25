@@ -8,13 +8,36 @@ function VyHub.Player:Initialize(ply, retry)
 
     VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), ply:SteamID64()))
 
-    VyHub.API:get("/user/%s", {ply:SteamID64()}, nil, function(code, result)
+    VyHub.API:get("/user/%s", {ply:SteamID64()}, {non_central = "true"}, function(code, result)
         VyHub:msg(string.format("Found existing user %s for steam id %s.", result.id, ply:SteamID64()), "success")
 
         VyHub.Player.table[ply:SteamID64()] = result
+        ply:SetNWString("vyhub_id", result.id)
+
+        VyHub.Player:refresh(ply)
 
         hook.Run("vyhub_ply_initialized", ply)
-    end, function()
+
+        local ply_timer_name = "vyhub_player_" .. ply:SteamID64()
+
+        timer.Create(ply_timer_name, VyHub.Config.player_refresh_time, 0, function()
+            if IsValid(ply) then
+                VyHub.Player:refresh(ply)
+            else
+                timer.Remove(ply_timer_name)
+            end
+        end)
+    end, function(code, reason)
+        if code != 404 then
+            VyHub:msg(string.format("Could not check if users %s exists. Retrying in a minute..", ply:SteamID64()), "error")
+
+            timer.Simple(60, function ()
+                VyHub.Player:Initialize(ply)
+            end)
+
+            return
+        end
+
         if retry then
             VyHub:msg(string.format("Could not create user %s. Retrying in a minute..", ply:SteamID64()), "error")
 
@@ -35,24 +58,73 @@ function VyHub.Player:Initialize(ply, retry)
     end)
 end
 
-function VyHub.Player:get(steamid64, callback)
-    if VyHub.Player.table[steamid64] != nil then
-        callback(VyHub.Player.table[steamid64])
+function VyHub.Player:get(steamid, callback)
+    if VyHub.Player.table[steamid] != nil then
+        callback(VyHub.Player.table[steamid])
     else
-        VyHub.API:get("/user/%s", {steamid64}, nil, function(code, result)
-            VyHub:msg(string.format("Received user %s for steam id %s.", result.id, steamid64), "debug")
+        VyHub.API:get("/user/%s", {steamid}, {non_central = "true"}, function(code, result)
+            VyHub:msg(string.format("Received user %s for steam id %s.", result.id, steamid), "debug")
     
-            VyHub.Player.table[ply:SteamID64()] = result
+            VyHub.Player.table[steamid] = result
 
             callback(result)
         end, function()
-            VyHub:msg(string.format("Could not receive user %s.", steamid64), "error")
+            VyHub:msg(string.format("Could not receive user %s.", steamid), "error")
 
             callback(nil)
         end)
     end
 end
 
+function VyHub.Player:check_group(ply, callback)
+    VyHub.API:get("/user/%s/group", {ply:GetNWString("vyhub_id")}, { serverbundle_id = VyHub.server.serverbundle_id }, function(code, result)
+        local highest = nil
+
+        for _, group in pairs(result) do
+            if highest == nil or highest.permission_level < group.permission_level then
+                highest = group
+            end
+        end
+
+        if highest == nil then
+            VyHub:msg(string.format("Could not find any active group for %s", ply:SteamID64()), "error")
+            return
+        end
+
+        local server_group = highest.properties['server_group']
+        local group = nil
+
+        if server_group == nil or not isstring(server_group.value) then
+            VyHub:msg(string.format("Could not find server_group property for group %s. Using name instead.", highest.name), "warning")
+            group = highest.name
+        else
+            group = server_group.value
+        end
+
+        curr_group = ply:GetUserGroup()
+
+        if curr_group != group then
+            if serverguard then
+                serverguard.player:SetRank(ply, group, false, true)
+            elseif ulx then
+                ULib.ucl.addUser( ply:SteamID(), {}, {}, group, true )
+            elseif sam then
+                sam.player.set_rank(ply, group, 0)
+            else
+                ply:SetUserGroup(group, true)
+            end
+            
+            VyHub:msg("Added " .. ply:Nick() .. " to group " .. group, "success")
+            VyHub:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
+        end
+    end, function()
+        
+    end)
+end
+
+function VyHub.Player:refresh(ply, callback)
+    VyHub.Player:check_group(ply)
+end
 
 hook.Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)
     VyHub.Player:Initialize(ply)
