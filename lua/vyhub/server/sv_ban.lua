@@ -94,12 +94,13 @@ function VyHub.Ban:handle_queue()
                                             reason = ban.reason,
                                             serverbundle_id = VyHub.server.serverbundle.id,
                                             user_id = user.id,
-                                            creator_id = creator != nil and creator.id or nil,
                                             created_on = ban.created_on,
                                             status = ban.status,
                                         }
 
-                                        VyHub.API:post('/ban/', nil, data, function(code, result)
+                                        local morph_user_id = creator != nil and creator.id or nil
+              
+                                        VyHub.API:post(f('/ban/?morph_user_id=%s', morph_user_id), nil, data, function(code, result)
                                             VyHub.Ban.ban_queue[steamid][i] = nil
                                             VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()
@@ -107,15 +108,15 @@ function VyHub.Ban:handle_queue()
                                             if code >= 400 and code < 500 then
                                                 msg = reason
 
-                                                error = string.format("Could not create ban for %s, aborting: %s", steamid, msg)
+                                                error = string.format("Could not create ban for %s, aborting: %s", steamid, json.encode(msg))
 
                                                 VyHub:msg(error, "error")
 
                                                 VyHub.Ban.ban_queue[steamid][i] = nil
                                                 VyHub.Ban:save_queues()
 
-                                                if data.creator_id != nil then
-                                                    ply = player.GetBySteamID64(data.creator_id)
+                                                if creator != nil then
+                                                    ply = player.GetBySteamID64(creator.identifier)
 
                                                     if IsValid(ply) then
                                                         VyHub:print_chat(ply, error)

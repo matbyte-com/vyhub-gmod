@@ -8,3 +8,11 @@ function VyHub.Util:format_datetime(unix_timestamp)
 
     return os.date("%Y-%m-%dT%H:%M:%S" .. timezone)
 end
+
+function VyHub.Util:is_server(obj)
+	if type(obj) == "Entity" and (obj.EntIndex and obj:EntIndex() == 0) and !IsValid(obj) then
+		return true
+	else
+		return false
+	end
+end

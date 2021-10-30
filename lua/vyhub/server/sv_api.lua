@@ -64,10 +64,10 @@ function VyHub.API:delete(endpoint, path_params, success, failed)
     self:request("DELETE", url, path_params, nil, self.headers, nil, content_type, success, failed)
 end
 
-function VyHub.API:post(endpoint, path_params, body, success, failed)
+function VyHub.API:post(endpoint, path_params, body, success, failed, query)
     url = string.format("%s%s", VyHub.API.url, endpoint)
 
-    self:request("POST", url, path_params, nil, self.headers, body, content_type, success, failed)
+    self:request("POST", url, path_params, query, self.headers, body, content_type, success, failed)
 end
 
 function VyHub.API:patch(endpoint, path_params, body, success, failed)
