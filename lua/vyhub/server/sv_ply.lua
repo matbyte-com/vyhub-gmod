@@ -3,6 +3,8 @@ VyHub.Player = VyHub.Player or {}
 VyHub.Player.connect_queue = VyHub.Player.connect_queue or {}
 VyHub.Player.table = VyHub.Player.table or {}
 
+local meta_ply = FindMetaTable("Player")
+
 function VyHub.Player:Initialize(ply, retry)
     if not IsValid(ply) then return end
 
@@ -77,7 +79,12 @@ function VyHub.Player:get(steamid, callback)
 end
 
 function VyHub.Player:check_group(ply, callback)
-    VyHub.API:get("/user/%s/group", {ply:GetNWString("vyhub_id")}, { serverbundle_id = VyHub.server.serverbundle_id }, function(code, result)
+    if ply:VyHubID() == nil then
+        VyHub:msg(f("Could not check groups for user %s, because no VyHub id is available.", ply:SteamID64()), "debug")
+        return
+    end
+
+    VyHub.API:get("/user/%s/group", {ply:VyHubID()}, { serverbundle_id = VyHub.server.serverbundle_id }, function(code, result)
         local highest = nil
 
         for _, group in pairs(result) do
@@ -124,6 +131,32 @@ end
 
 function VyHub.Player:refresh(ply, callback)
     VyHub.Player:check_group(ply)
+end
+
+function meta_ply:VyHubID(callback)
+    local id = self:GetNWString("vyhub_id", nil)
+
+    if id == nil then
+        VyHub.Player:get(self:SteamID64(), function(user)
+            if user != nil then
+                ply:SetNWString("vyhub_id", user.id)
+
+                if callback then
+                    callback(user.id)
+                end
+            else
+                if callback then
+                    callback(nil)
+                end
+            end
+        end)
+    else
+        if callback then
+            callback(id)
+        end
+    end
+    
+    return id
 end
 
 hook.Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)

@@ -99,8 +99,13 @@ function VyHub.Ban:handle_queue()
                                         }
 
                                         local morph_user_id = creator != nil and creator.id or nil
+                                        local url = '/ban/'
+
+                                        if morph_user_id != nil then
+                                            url = url .. f('?morph_user_id=%s', morph_user_id)
+                                        end
               
-                                        VyHub.API:post(f('/ban/?morph_user_id=%s', morph_user_id), nil, data, function(code, result)
+                                        VyHub.API:post(url, nil, data, function(code, result)
                                             VyHub.Ban.ban_queue[steamid][i] = nil
                                             VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()

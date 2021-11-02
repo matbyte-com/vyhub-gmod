@@ -31,10 +31,21 @@ function VyHub.Group:refresh()
                 end
             end
         end
+    end, function (code, reason)
+        VyHub:msg("Could not refresh groups. Retrying in a minute.", "error")
+        timer.Simple(60, function ()
+            VyHub.Group:refresh()
+        end)
     end)
 end
 
 function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
+    if VyHub.groups_mapped == nil then
+        VyHub:msg("Groups not initialized yet. Please try again later.", "error")
+
+        return
+    end
+
     group = VyHub.groups_mapped[groupname]
 
     if group == nil then
@@ -61,7 +72,13 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
             end_date = VyHub.Util:format_datetime(os.time() + seconds)
         end
 
-        VyHub.API:post('/user/%s/membership', {user.id}, {
+        local url = '/user/%s/membership'
+
+        if processor_id != nil then
+            url = url .. '?morph_user_id=' .. processor_id
+        end
+
+        VyHub.API:post(url, {user.id}, {
             begin = VyHub.Util.format_datetime(),
             ["end"] = end_date,
             group_id = group.id,
@@ -78,8 +95,45 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
             if callback then
                 callback(true)
             end
-        end, function (reason)
+        end, function (code, reason)
             VyHub:msg(f("Could not add %s to group %s.", steamid, groupname), "error")
+            if callback then
+                callback(false)
+            end
+        end)
+    end)
+end
+
+function VyHub.Group:remove(steamid, processor_id, callback)
+    VyHub.Player:get(steamid, function (user)
+        if user == nil then
+            if callback then
+                callback(false)
+                return
+            end
+        end
+
+        local url = '/user/%s/membership'
+
+        if processor_id != nil then
+            url = url .. '?morph_user_id=' .. processor_id
+        end
+
+        VyHub.API:delete(url, {user.id}, function (code, result)
+            VyHub:msg(f("Removed %s from all groups.", steamid), "success")
+
+            local ply = player.GetBySteamID64(steamid)
+
+            if IsValid(ply) then
+                VyHub.Player:refresh(ply)
+            end
+
+            if callback then
+                callback(true)
+            end
+        end, function (code, reason)
+            VyHub:msg(f("Could not remove %s from all groups.", steamid), "error")
+
             if callback then
                 callback(false)
             end
@@ -135,7 +189,6 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
                     end
                 end)
 			end
-			
 		end
 
 		ULib.ucl.removeUser = function(id)
@@ -152,7 +205,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 			end
 
 			if steamid64 then
-				-- VyHub.Group:set(steamid64, GExtension:GetSetting("settings_general_defaultgroup"))
+                VyHub.Group:remove(steamid64)
 			end
 			
 			ulx_removeuser( id )
@@ -166,15 +219,22 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 			if not ignore_vh then
 				if target then
 					if type(target) == "Player" and IsValid(target) then
-						if not GExtension:SetGroup(target:SteamID64(), rank) then return end
+                        VyHub.Group:set(target:SteamID64(), rank, nil, nil, function(success)
+                            if success then
+                                servergaurd_setrank(self, target, rank, length)
+                            end
+                        end)
 					elseif type(target) == "string" and string.match(target, "STEAM_%d:%d:%d+") then
 						local steamid = util.SteamIDTo64(target)
-						if not GExtension:SetGroup(steamid, rank) then return end
+
+                        VyHub.Group:set(steamid, rank, nil, nil, function(success)
+                            if success then
+                                servergaurd_setrank(self, target, rank, length)
+                            end
+                        end)
 					end
 				end
 			end
-
-			servergaurd_setrank(self, target, rank, length)
 		end
 	end
 end)
