@@ -205,10 +205,12 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 			end
 
 			if steamid64 then
-                VyHub.Group:remove(steamid64)
+                VyHub.Group:remove(steamid64, nil, function (success)
+                    if success then
+                        ulx_removeuser( id )
+                    end
+                end)
 			end
-			
-			ulx_removeuser( id )
 		end
 	end
 	

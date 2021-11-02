@@ -61,6 +61,10 @@ function VyHub.Player:Initialize(ply, retry)
 end
 
 function VyHub.Player:get(steamid, callback)
+    if steamid == nil then
+        callback(nil)
+    end
+
     if VyHub.Player.table[steamid] != nil then
         callback(VyHub.Player.table[steamid])
     else
@@ -70,10 +74,14 @@ function VyHub.Player:get(steamid, callback)
             VyHub.Player.table[steamid] = result
 
             callback(result)
-        end, function()
+        end, function(code)
             VyHub:msg(string.format("Could not receive user %s.", steamid), "error")
 
-            callback(nil)
+            if code == 404 then
+                callback(false)
+            else
+                callback(nil)
+            end
         end)
     end
 end

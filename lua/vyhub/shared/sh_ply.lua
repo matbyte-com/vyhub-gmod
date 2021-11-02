@@ -46,3 +46,13 @@ function VyHub:print_chat(ply, message, tag, color)
 		end
 	end
 end
+
+function VyHub:print_chat_steamid(steamid, message, tag, color)
+	if steamid != nil and steamid != false then
+		ply = player.GetBySteamID64(steamid)
+	
+		if IsValid(ply) then
+			VyHub:print_chat(ply,  message, tag, color)
+		end
+	end
+end
