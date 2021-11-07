@@ -57,9 +57,9 @@ function VyHub.Reward:refresh(callback)
     end
 end
 
-function VyHub.Reward:set_executed(reward_id)
-    table.insert(VyHub.Reward.executed_rewards, reward_id)
-    table.insert(VyHub.Reward.executed_rewards_queue, reward_id)
+function VyHub.Reward:set_executed(areward_id)
+    VyHub.Reward.executed_rewards_queue[areward_id] = true
+    table.insert(VyHub.Reward.executed_rewards, areward_id)
 
     VyHub.Reward:save_executed()
 end
@@ -69,17 +69,19 @@ function VyHub.Reward:save_executed()
 end
 
 function VyHub.Reward:send_executed()
-    for i, reward_id in pairs(VyHub.Reward.executed_rewards) do
-        VyHub.API:patch('/packet/reward/applied/%s', { reward_id }, { executed_on = { VyHub.server.id } }, function (code, result)
-            VyHub.Reward.executed_rewards_queue[i] = nil
-            VyHub.Reward:save_executed()
-        end, function (code, reason)
-            if code >= 400 and code < 500 then
-                VyHub:msg(f("Could not mark reward %s as executed. Aborting.", reward_id), "error")
-                VyHub.Reward.executed_rewards_queue[i] = nil
+    for areward_id, val in pairs(VyHub.Reward.executed_rewards_queue) do
+        if val != nil then
+            VyHub.API:patch('/packet/reward/applied/%s', { areward_id }, { executed_on = { VyHub.server.id } }, function (code, result)
+                VyHub.Reward.executed_rewards_queue[areward_id] = nil
                 VyHub.Reward:save_executed()
-            end
-        end)
+            end, function (code, reason)
+                if code >= 400 and code < 500 then
+                    VyHub:msg(f("Could not mark reward %s as executed. Aborting.", areward_id), "error")
+                    VyHub.Reward.executed_rewards_queue[areward_id] = nil
+                    VyHub.Reward:save_executed()
+                end
+            end)
+        end
     end
 end
 
@@ -115,7 +117,7 @@ function VyHub.Reward:exec_rewards(event, steamid)
             local se = true
             local reward = areward.reward
 
-            if not table.HasValue(allowed_events, event) then
+            if not table.HasValue(allowed_events, reward.on_event) then
                 continue
             end
 
@@ -132,7 +134,13 @@ function VyHub.Reward:exec_rewards(event, steamid)
                     game.ConsoleCommand(cmd.. "\n")
                 end
             elseif reward.type == RewardType.SCRIPT then
+                local lua_str = data.script
 
+                if lua_str != nil then
+                    lua_str = VyHub.Reward:do_string_replacements(lua_str, ply, areward)
+
+                    RunString("local PLAYER = player.GetBySteamID64(\"" .. steamid .. "\") " .. lua_str, "vyhub_reward_script")
+                end
             else
                 VyHub:msg(f("No implementation for reward type %s", reward.type) "warning")
             end
