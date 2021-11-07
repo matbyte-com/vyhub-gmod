@@ -16,7 +16,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
         result = json.decode(body)
 
         if code >= 200 and code < 300 then
-            VyHub:msg(string.format("HTTP %s %s: %s", method, url, code), "debug")
+            VyHub:msg(string.format("HTTP %s %s (%s): %s", method, url, json.encode(query), code), "debug")
 
             if success != nil then
                 // VyHub:msg(string.format("Response: %s", body), "debug")

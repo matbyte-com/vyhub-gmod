@@ -4,3 +4,5 @@ VyHub.Config.server_id = "c0289064-c9db-42ec-b928-4ae8cab76d1a"
 
 VyHub.Config.player_refresh_time = 60
 VyHub.Config.group_refresh_time = 300
+
+VyHub.Config.replace_ulib_bans = true

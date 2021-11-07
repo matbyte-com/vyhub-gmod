@@ -1,7 +1,30 @@
+VyHub.theme = VyHub.theme or nil
+
 function VyHub:server_data_ready()
     VyHub:msg(string.format("I am server %s in bundle %s.", VyHub.server.name, VyHub.server.serverbundle.name))
 
     hook.Run("vyhub_ready")
+end
+
+function VyHub:get_theme(callback)
+    if VyHub.theme != nil then
+        return VyHub.theme
+    end
+
+    VyHub.API:get('/design/theme', nil, nil, function (code, result)
+        VyHub.theme = result
+        VyHub.Cache:save('theme', result)
+
+        callback(theme)
+    end, function ()
+        local theme = VyHub.Cache:get('theme')
+
+        if theme == nil then
+            VyHub:msg("Could not get theme!", "error")
+        end
+
+        callback(theme)
+    end)
 end
 
 hook.Add("vyhub_api_ready", "vyhub_main_vyhub_api_ready", function ()

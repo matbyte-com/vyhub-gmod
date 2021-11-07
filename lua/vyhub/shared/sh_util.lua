@@ -16,3 +16,34 @@ function VyHub.Util:is_server(obj)
 		return false
 	end
 end
+
+function VyHub.Util:iso_to_unix_timestamp(datetime)
+	if datetime == nil then return nil end
+
+	local pd = date(datetime)
+
+	if pd == nil then return nil end
+
+	local time = os.time(
+		{
+			year = pd:getyear(),
+			month = pd:getmonth(),
+			day = pd:getday(),
+			hour = pd:gethours(),
+			minute = pd:getminutes(),
+			second = pd:getseconds(),
+		}
+	)
+
+	return time
+end
+
+function VyHub.Util:get_ply_by_nick(nick)
+	nick = string.lower(nick);
+	
+	for _,v in ipairs(player.GetHumans()) do
+		if(string.find(string.lower(v:Name()), nick, 1, true) != nil)
+			then return v;
+		end
+	end
+end

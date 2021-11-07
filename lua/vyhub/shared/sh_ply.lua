@@ -33,6 +33,7 @@ function VyHub:print_chat(ply, message, tag, color)
 				color = [[255, 255, 255]]
 			end
 
+			message = string.Replace(message, '"', '')
 			message = string.Replace(message, '\r', '')
 			message = string.Replace(message, '\n', '')
 

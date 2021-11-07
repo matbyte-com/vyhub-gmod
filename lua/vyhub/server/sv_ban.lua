@@ -53,7 +53,7 @@ function VyHub.Ban:refresh()
         
         VyHub:msg(string.format("Found %s users with active bans.", table.Count(VyHub.bans)), "debug")
 
-        VyHub.Ban:kick_banned_players()
+        hook.Run("vyhub_bans_refreshed")
     end, function()
         VyHub:msg("Could not refresh bans, trying to use cache.", "error")
 
@@ -64,7 +64,7 @@ function VyHub.Ban:refresh()
 
             VyHub:msg(string.format("Found %s users with cached active bans.", table.Count(VyHub.bans)), "neutral")
 
-            VyHub.Ban:kick_banned_players()
+            hook.Run("vyhub_bans_refreshed")
         else
             VyHub:msg("No cached bans available!", "error")
         end
@@ -346,23 +346,19 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
             if steamid64 and steamid64_admin then
                 if steamid64_admin == nil then
-                    GExtension:Unban(steamid64, steamid64_admin)
+                    VyHub.Ban:unban(steamid64, steamid64_admin)
                 else
                     local ply = player.GetBySteamID64(steamid64_admin)
 
                     if IsValid(ply) then
-                        if ply:GE_CanBan(steamid64, 1) then
-                            GExtension:Unban(steamid64, steamid64_admin)
-                        else
-                            ply:GE_Error_Permissions()
-                        end
+                        VyHub.Ban:unban(steamid64, steamid64_admin)
                     else
-                        GExtension:Print("error", "Invalid players tried to unban " .. steamid64 .. ".")
+                        VyHub:msg("Invalid player tried to unban " .. steamid64 .. ".", "error")
                     end
                 end
             end
 
-            if not GExtension.EnableReplaceULibBans then
+            if not VyHub.Config.ulib_replace_bans then
                 ulx_unban(steamid32, steamid32_admin)
             end
         end
@@ -378,7 +374,8 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
 
             if shouldBan then
-                GExtension:Ban(util.SteamIDTo64(steamid), time, reason, ply:SteamID64())
+                local steamid64 = util.SteamIDTo64(steamid)
+                VyHub.Ban:create(steamid64, time, reason, nil)
             end
         end
 
@@ -405,7 +402,8 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                     ulx.doVote( "Accept result and ban " .. nick .. "?", {"Yes", "No" }, voteBanDone2, 30000, {ply}, true, nick, steamid, time, ply, reason)
                 else -- Vote from server console, roll with it
                     str = "Vote results: User will now be banned. (" .. winnernum .. "/" .. t.voters .. ")"
-                    GExtension:Ban(util.SteamIDTo64(steamid), time, reason, "0")
+                    local steamid64 = util.SteamIDTo64(steamid)
+                    VyHub.Ban:create(steamid64, time, reason, nil)
                 end
             end
 
@@ -443,7 +441,11 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             local steamid64 = util.SteamIDTo64(steamid32)
 
             if steamid64 then
-                ply:GE_OpenURL(GExtension.WebURL .. "index.php?t=admin_bans&id=" .. steamid64)
+                VyHub:get_theme(function (theme)
+                    if theme != nil then
+                        ply:vh_open_url(theme.frontend_url .. "/bans")
+                    end
+                end)
             end
         end
         xgui.addCmd( "updateBan", ulx_xgui_updateban )
@@ -452,30 +454,28 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             hook.Remove("CheckPassword", "ULibBanCheck")
             
             ULib.bans = {}
-            for _, bd in ipairs(GExtension.Bans) do
-                local admin = GExtension.Players[bd.steamid64_admin]
-                local banned = GExtension.Players[bd.steamid64]
-
-                local nick = bd["steamid64"]
-                local nick_admin = bd["steamid64_admin"]
-                local steamid32 = util.SteamIDFrom64(bd["steamid64"])
-
-                if banned then
-                    nick = banned.nick
+            for steamid, bans in pairs(VyHub.bans) do
+                if bans != nil then
+                    for _, ban in pairs(bans) do
+                        if ban != nil then
+                            local steamid32 = util.SteamIDFrom64(steamid)
+                            local unban_ts = 0
+                            
+                            if ban.ends_on != nil then
+                                unban_ts = VyHub.Util:iso_to_unix_timestamp(ban.ends_on)
+                            end
+            
+                            ULib.bans[steamid32] = {
+                                name = ban.user.username,
+                                admin = ban.creator != nil and ban.creator.username or nil,
+                                unban = unban_ts,
+                                time = VyHub.Util:iso_to_unix_timestamp(ban.created_on),
+                                steamID = steamid32,
+                                reason = ban.reason,
+                            }
+                        end
+                    end
                 end
-
-                if admin then
-                    nick_admin = admin.nick
-                end
-
-                ULib.bans[steamid32] = {
-                    name = nick,
-                    admin = nick_admin,
-                    unban = tonumber(bd["length"]) == 0 and 0 or tonumber(bd["date_banned_unix"]) + tonumber(bd["length"])*60,
-                    time = bd["date_banned_unix"],
-                    steamID = steamid32,
-                    reason = bd["reason"]
-                }
             end
 
             xgui.bansbyid = {}
@@ -491,7 +491,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
     if evolve then
         function evolve:Ban(ply, length, reason)
-            GExtension:Ban(ply:SteamID64(), length, reason, 0)
+            VyHub.Ban:create(ply:SteamID64(), length, reason)
         end
     end
 
@@ -503,7 +503,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 if type(ply_obj) == "Player" then
                     steamid64 = ply_obj:SteamID64()
                 elseif type(ply_obj) == "string" then
-                    local target = GExtension:GetPlayerByNick(ply_obj)
+                    local target = VyHub.Util:get_ply_by_nick(ply_obj)
 
                     if IsValid(target) then
                         ply_obj = target
@@ -515,13 +515,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 end
 
                 if IsValid(admin) then
-                    if admin:GE_CanBan(steamid64, length) then
-                        GExtension:Ban(steamid64, length, reason, admin:SteamID64())
-                    else
-                        admin:GE_Error_Permissions()
-                    end
+                    VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
                 else
-                    GExtension:Ban(steamid64, length, reason, 0)
+                    VyHub.Ban:create(ply:SteamID64(), length, reason)
                 end
             end
         end
@@ -538,16 +534,12 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
             if steamid64 and steamid64_admin then
                 if steamid64_admin == "0" then
-                    GExtension:Unban(steamid64, steamid64_admin)
+                    VyHub.Ban:unban(steamid64, steamid64_admin)
                 else
                     if IsValid(admin) then
-                        if admin:GE_CanBan(steamid64, 1) then
-                            GExtension:Unban(steamid64, steamid64_admin)
-                        else
-                            admin:GE_Error_Permissions()
-                        end
+                        VyHub.Ban:unban(steamid64, steamid64_admin)
                     else
-                        GExtension:Print("error", "Tried to unban " .. steamid64 .. " from invalid player.")
+                        VyHub:msg("Tried to unban " .. steamid64 .. " from invalid player.", "error")
                     end
                 end
             end
@@ -563,11 +555,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 local reason 		= table.concat(args, " ", 4) or ""
                 local steamid64_admin 	= ply:SteamID64()
 
-                if ply:GE_CanBan(steamid64, length) then
-                    GExtension:Ban(steamid64, length, reason, steamid64_admin)
-                else
-                    admin:GE_Error_Permissions()
-                end
+                VyHub.Ban:create(steamid64, length, reason, steamid64_admin)
             end
         end)
 
@@ -625,20 +613,16 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             local admin = player.GetBySteamID(admin)
 
             if IsValid(admin) then
-                if admin:GE_CanBan(steamid64, length) then
-                    GExtension:Ban(steamid64, length, reason, admin:SteamID64())
-                else
-                    admin:GE_Error_Permissions()
-                end
+                VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
             else
-                GExtension:Ban(steamid64, length, reason, 0)
+                VyHub.Ban:create(steamid64, length, reason)
             end
         end
 
         xadmin_removeban = xAdmin.RemoveBan
 
         function xAdmin.RemoveBan(steamid64)
-            GExtension:Unban(steamid64, 0)
+            VyHub.Ban:unban(steamid64)
 
             xadmin_removeban(steamid64)
         end
@@ -652,36 +636,44 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             if isstring(ply) then steamid64 = util.SteamIDTo64(ply) elseif IsValid(ply) then steamid64 = ply:SteamID64() end
 
             if IsValid(admin) and admin:EntIndex() != 0 then
-                if admin:GE_CanBan(steamid64, length) then
-                    GExtension:Ban(steamid64, length, reason, admin:SteamID64())
-                else
-                    admin:GE_Error_Permissions()
-                end
+                VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
             else
-                GExtension:Ban(steamid64, length, reason, 0)
+                VyHub.Ban:create(steamid64, length, reason)
             end
         end
 
         xadmin_removeban = xAdmin.Admin.RemoveBan
 
         function xAdmin.Admin.RemoveBan(steamid64)
-            GExtension:Unban(steamid64, 0)
+            VyHub.Ban:unban(steamid64)
 
             xadmin_removeban(steamid64)
         end
 
-        if GExtension.EnableReplacexAdmin2Bans then
-            function GExtension:ReplacexAdmin2Bans()
+        if VyHub.Config.replace_xadmin2_bans then
+            function VyHub.Ban:replace_xadmin2_bans()
                 xAdmin.Admin.Bans = {}
 
-                for _, banData in ipairs(GExtension.Bans) do
-                    xAdmin.Admin.Bans[tostring(banData['steamid64'])] = {
-                        SteamID = tostring(banData['steamid64']),
-                        Admin = tostring(banData['steamid64_admin']),
-                        Reason = banData['reason'],
-                        StartTime = banData['date_banned_unix'],
-                        Length = banData['length'],
-                    }
+                for steamid, bans in pairs(VyHub.bans) do
+                    if ban != nil then
+                        for _, ban in pairs(bans) do
+                            if ban != nil then
+                                admin_steamid = nil 
+
+                                if ban.creator != nil and ban.creator.type == "STEAM" then
+                                    admin_steamid = ban.creator.identifier
+                                end
+
+                                xAdmin.Admin.Bans[tostring(steamid)] = {
+                                    SteamID = tostring(steamid),
+                                    Admin = tostring(admin_steamid),
+                                    Reason = ban.reasion,
+                                    StartTime = VyHub.Util:iso_to_unix_timestamp(ban.created_on),
+                                    Length = ban.length,
+                                }
+                            end
+                        end
+                    end
                 end
 
                 for _, ply in ipairs(player.GetAll()) do
@@ -693,11 +685,15 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
         
             function xAdmin.Admin.ModifyBan(admin, ply, reason, length)
-                if not GExtension.IsConsole(admin) then
-                    admin:GE_PrintToChat("Operation not supported.")
-                    admin:GE_OpenURL(GExtension.WebURL .. "index.php?t=admin_bans&id=" .. ply)
+                if not VyHub.Util:is_server(admin) then
+                    VyHub:print_chat(ply, "Operation not supported.")
+                    VyHub:get_theme(theme, function (theme)
+                        if theme != nil then
+                            ply:vh_open_url(theme.frontend_url .. "/bans")
+                        end
+                    end)
                 else
-                    GExtension:Print("error", "Operation not supported.")
+                    VyHub:msg("Operation not supported.", "error")
                 end
             end
         end
@@ -715,8 +711,8 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 end
 
                 if steamid64 then
-                      GExtension:Unban(steamid64, steamid64_admin)
-                  end
+                    VyHub.Ban:unban(steamid64, steamid64_admin)
+                end
             end)
 
             local StartBannedUsers = {} 
@@ -812,7 +808,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                             end
                             local nick = ply.Nick and ply:Nick() or "console"
 
-                            GExtension:Ban(target:SteamID64(), time, Reason, ply:SteamID64() or "0")
+                            VyHub.Ban:create(target:SteamID64(), time, Reason, ply:SteamID64() or nil)
                         else
                             for k,v in pairs(StartBannedUsers) do
                                 if v == args[1] then
@@ -823,7 +819,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
                             local steamid64 = util.SteamIDTo64(target)
 
-                            GExtension:Ban(target, time, Reason, ply:SteamID64() or "0")
+                            VyHub.Ban:create(steamid64, time, Reason, ply:SteamID64() or nil)
                         end
                         ply.FAdminKickReason = nil
                     end
@@ -849,13 +845,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
 
             if IsValid(admin) then
-                if admin:GE_CanBan(steamid64, length) then
-                    GExtension:Ban(steamid64, length, reason, admin:SteamID64())
-                else
-                    admin:GE_Error_Permissions()
-                end
+                VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
             else
-                GExtension:Ban(steamid64, length, reason, 0)
+                VyHub.Ban:create(steamid64, length, reason)
             end
         end
 
@@ -873,13 +865,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
 
             if IsValid(admin) then
-                if admin:GE_CanBan(steamid64, length) then
-                    GExtension:Ban(steamid64, length, reason, admin:SteamID64())
-                else
-                    admin:GE_Error_Permissions()
-                end
+                VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
             else
-                GExtension:Ban(steamid64, length, reason, 0)
+                VyHub.Ban:create(steamid64, length, reason)
             end
         end
 
@@ -895,13 +883,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
 
             if IsValid(admin) then
-                if admin:GE_CanBan(steamid64, 1) then
-                    GExtension:Unban(steamid64, admin:SteamID64())
-                else
-                    admin:GE_Error_Permissions()
-                end
+                VyHub.Ban:unban(steamid64, admin:SteamID64())
             else
-                GExtension:Unban(steamid64, 0)
+                VyHub.Ban:unban(steamid64)
             end
 
             sam_unban(steamid, admin_steamid)
@@ -909,18 +893,34 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
     end
 
     if not ULib and not evolve and not serverguard and not xAdmin and not sam then
-        GExtension:RegisterChatCommand("!ban", function(ply, args)
-            if not args[1] or not args[2] or not args[3] then return end
+        -- GExtension:RegisterChatCommand("!ban", function(ply, args)
+        --     if not args[1] or not args[2] or not args[3] then return end
 
-            local reason = GExtension:ConcatArgs(args, 3)
+        --     local reason = GExtension:ConcatArgs(args, 3)
 
-            local target = GExtension:GetPlayerByNick(args[1])
+        --     local target = GExtension:GetPlayerByNick(args[1])
 
-            if IsValid(target) and isnumber(args[2]) then
-                if ply:GE_CanBan(target:SteamID64(), args[2]) then
-                    target:GE_Ban(length, reason, ply:SteamID64())
-                end
-            end
-        end)
+        --     if IsValid(target) and isnumber(args[2]) then
+        --         if ply:GE_CanBan(target:SteamID64(), args[2]) then
+        --             target:GE_Ban(length, reason, ply:SteamID64())
+        --         end
+        --     end
+        -- end)
     end
+
+    hook.Add("vyhub_bans_refreshed", "vyhub_ban_vyhub_bans_refreshed", function()
+        VyHub.Ban:kick_banned_players()
+
+        if VyHub.Config.replace_ulib_bans then
+            if VyHub.Ban.replace_ulib_bans then
+                VyHub.Ban:replace_ulib_bans()
+            end
+        end
+
+        if VyHub.Config.replace_xadmin2_bans then
+            if VyHub.Ban.replace_xadmin2_bans then
+                VyHub.Ban:replace_xadmin2_bans()
+            end
+        end
+    end)
 end)
