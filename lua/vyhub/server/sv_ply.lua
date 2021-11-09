@@ -11,7 +11,7 @@ function VyHub.Player:Initialize(ply, retry)
     VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), ply:SteamID64()))
 
     VyHub.API:get("/user/%s", {ply:SteamID64()}, {non_central = "true"}, function(code, result)
-        VyHub:msg(string.format("Found existing user %s for steam id %s.", result.id, ply:SteamID64()), "success")
+        VyHub:msg(string.format("Found existing user %s for steam id %s (%s).", result.id, ply:SteamID64(), ply:Nick()), "success")
 
         VyHub.Player.table[ply:SteamID64()] = result
         ply:SetNWString("vyhub_id", result.id)

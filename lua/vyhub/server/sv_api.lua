@@ -13,7 +13,11 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
     end
 
     success_func = function(code, body, headers)
-        result = json.decode(body)
+        local result = body
+
+        if headers["Content-Type"] and headers["Content-Type"] == 'application/json' then
+            result = json.decode(body)
+        end
 
         if code >= 200 and code < 300 then
             VyHub:msg(string.format("HTTP %s %s (%s): %s", method, url, json.encode(query), code), "debug")
