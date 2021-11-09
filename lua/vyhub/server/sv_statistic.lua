@@ -75,9 +75,9 @@ function VyHub.Statistic:get_or_create_attr_definition(callback)
                 name = "playtime",
                 title = "Play Time",
                 unit = "Hours",
-                type = UserAttributeType.ACCUMULATED,
+                type = "ACCUMULATED",
                 accumulation_interval = "day",
-                unspecific = true,
+                unspecific = "true",
             }, function (code, result)
                 VyHub.Cache:save("playtime_attr_def", result)
                 cb_wrapper(result)
