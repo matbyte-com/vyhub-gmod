@@ -63,6 +63,12 @@ end
 function VyHub.Player:get(steamid, callback)
     if steamid == nil then
         callback(nil)
+        return
+    end
+
+    if steamid == false  then
+        callback(false)
+        return
     end
 
     if VyHub.Player.table[steamid] != nil then
@@ -130,7 +136,7 @@ function VyHub.Player:check_group(ply, callback)
             end
             
             VyHub:msg("Added " .. ply:Nick() .. " to group " .. group, "success")
-            VyHub:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
+            VyHub.Util:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
         end
     end, function()
         

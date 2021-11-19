@@ -31,7 +31,13 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
             VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
 
             if failed != nil then
-                failed(code, result, headers)
+                local err_text = json.encode(result)
+
+                if istable(result) and result.detail != nil and result.detail.msg != nil then
+                    err_text = f("%s (%s)", result.detail.msg, result.detail.code)
+                end
+
+                failed(code, result, headers, err_text)
             end
         end
     end
@@ -100,8 +106,6 @@ hook.Add("vyhub_loading_finish", "vyhub_api_vyhub_loading_finish", function()
 
     VyHub.API:get("/openapi.json", nil, nil, function(code, result, headers)
         VyHub:msg(string.format("Connection to API %s version %s successful!", result.info.title, result.info.version), "success")
-
-        VyHub.ready = true
 
         hook.Run("vyhub_api_ready")
     end, function()

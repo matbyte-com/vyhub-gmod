@@ -80,6 +80,10 @@ function VyHub.Ban:handle_queue()
         VyHub:msg(string.format("Could not send unban of user %s to API. Retrying..", steamid), "error")
     end
 
+    local function failed_ban_abort(steamid)
+        
+    end
+
     if not table.IsEmpty(VyHub.Ban.ban_queue) then
         for steamid, bans in pairs(VyHub.Ban.ban_queue) do
             if bans != nil then
@@ -87,8 +91,12 @@ function VyHub.Ban:handle_queue()
                     for i, ban in pairs(bans) do
                         if ban != nil then
                             VyHub.Player:get(ban.user_steamid, function(user)
-                                if user != nil then
-                                    local function create_ban(creator)
+                                if user then
+                                    VyHub.Player:get(ban.creator_steamid, function(creator)
+                                        if creator == false then
+                                            return
+                                        end
+
                                         local data = {
                                             length = ban.length,
                                             reason = ban.reason,
@@ -98,13 +106,13 @@ function VyHub.Ban:handle_queue()
                                             status = ban.status,
                                         }
 
-                                        local morph_user_id = creator != nil and creator.id or nil
+                                        local morph_user_id = creator and creator.id or nil
                                         local url = '/ban/'
 
                                         if morph_user_id != nil then
                                             url = url .. f('?morph_user_id=%s', morph_user_id)
                                         end
-              
+                
                                         VyHub.API:post(url, nil, data, function(code, result)
                                             VyHub.Ban.ban_queue[steamid][i] = nil
                                             VyHub.Ban:save_queues()
@@ -115,7 +123,7 @@ function VyHub.Ban:handle_queue()
                                             VyHub:msg(msg, "success")
 
                                             if creator != nil then
-                                                VyHub:print_chat_steamid(creator.identifier, msg)
+                                                VyHub.Util:print_chat_steamid(creator.identifier, msg)
                                             end
                                         end, function(code, reason)
                                             if code >= 400 and code < 500 then
@@ -129,25 +137,16 @@ function VyHub.Ban:handle_queue()
                                                 VyHub.Ban:save_queues()
 
                                                 if creator != nil then
-                                                    VyHub:print_chat_steamid(creator.identifier, error_msg)
+                                                    VyHub.Util:print_chat_steamid(creator.identifier, error_msg)
                                                 end
                                             else
                                                 failed_ban(ban.user_steamid)
                                             end
                                         end)
-                                    end
-
-                                    if ban.creator_steamid != nil then
-                                        VyHub.Player:get(ban.user_steamid, function(creator)
-                                            if creator != nil then
-                                                create_ban(creator)
-                                            else
-                                                failed_ban(ban.user_steamid)
-                                            end
-                                        end)
-                                    else
-                                        create_ban(nil)    
-                                    end
+                                    end)
+                                elseif user == false then 
+                                    VyHub.Ban.ban_queue[steamid][i] = nil
+                                    VyHub.Ban:save_queues()
                                 else
                                     failed_ban(ban.user_steamid)
                                 end                            
@@ -176,14 +175,20 @@ function VyHub.Ban:handle_queue()
                     local error_msg = f("Could not unban user %s, aborting: User not found", steamid)
 
                     VyHub:msg(error_msg, "error")
-                    VyHub:print_chat_steamid(creator_steamid, error_msg)
+                    VyHub.Util:print_chat_steamid(creator_steamid, error_msg)
                 elseif user == nil then
                     failed_unban(steamid)
                 else
                     local url = '/user/%s/ban'
 
+                    creator_steamid = creator_steamid == false and nil or creator_steamid
+
                     VyHub.Player:get(creator_steamid, function(creator)
-                        if creator != nil then
+                        if creator_steamid != nil and creator == nil then
+                            return
+                        end
+
+                        if creator then
                             url = url .. f('?morph_user_id=%s', creator.id)
                         end
 
@@ -194,7 +199,7 @@ function VyHub.Ban:handle_queue()
     
                             local msg = f("Successfully unbanned user %s.", steamid)
                             VyHub:msg(msg, "success")
-                            VyHub:print_chat_steamid(creator_steamid, msg)
+                            VyHub.Util:print_chat_steamid(creator_steamid, msg)
                         end, function (code, reason)
                             if code >= 400 and code < 500 then
                                 VyHub.Ban.unban_queue[steamid] = nil
@@ -203,7 +208,7 @@ function VyHub.Ban:handle_queue()
                                 local error_msg = f("Could not unban user %s, aborting: %s", steamid, json.encode(msg))
     
                                 VyHub:msg(error_msg, "error")
-                                VyHub:print_chat_steamid(creator_steamid, error_msg)
+                                VyHub.Util:print_chat_steamid(creator_steamid, error_msg)
                             else
                                 failed_unban(steamid)
                             end
@@ -216,6 +221,8 @@ function VyHub.Ban:handle_queue()
 end
 
 function VyHub.Ban:create(steamid, length, reason, creator_steamid)
+    length = tonumber(length)
+
     if length == 0 then
         length = nil
     end
@@ -274,6 +281,23 @@ function VyHub.Ban:clear()
     VyHub.Ban:save_queues()
 end
 
+function VyHub.Ban:create_ban_msg(ban)
+    local unban_date = ban.ends_on != nil and ban.ends_on or VyHub.lang.other.never
+    local creator_username = ban.creator != nil and ban.creator.username or VyHub.lang.other.unknown
+
+    local msg = "                            > Ban Message <" .. "\n\n"
+    .. VyHub.lang.other.reason .. ": " .. ban.reason .. "\n" 
+    .. VyHub.lang.other.ban_date .. ": " .. ban.created_on .. "\n" 
+    .. VyHub.lang.other.unban_date .. ": " .. unban_date .. "\n" 
+    .. VyHub.lang.other.admin .. ": " .. creator_username .. "\n\n" 
+
+    if VyHub.theme != nil and VyHub.theme.frontend_url != nil then
+        msg = msg .. VyHub.lang.other.unban_url .. ": " .. VyHub.theme.frontend_url .. "\n"
+    end
+
+    return msg
+end
+
 hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
     VyHub.Ban:refresh()
 
@@ -286,6 +310,22 @@ hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
 
     timer.Create("vyhub_ban_handle_queues", 10, 0, function ()
         VyHub.Ban:handle_queue()
+    end)
+
+    hook.Add("CheckPassword", "vyhub_ban_CheckPassword", function(steamid64, ip)
+        if VyHub.Ban:check_player_banned(steamid64) then
+            local msg = "You are banned from this server."
+            
+            local bans = VyHub.bans[steamid64]
+
+            if table.Count(bans) > 0 then
+                local ban = bans[1]
+                msg = VyHub.Ban:create_ban_msg(ban)
+            end
+
+            VyHub:msg(f("%s tried to connect with ip %s, but is banned.", steamid64, ip))
+            return false, msg
+        end
     end)
 end)
 
@@ -686,7 +726,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
         
             function xAdmin.Admin.ModifyBan(admin, ply, reason, length)
                 if not VyHub.Util:is_server(admin) then
-                    VyHub:print_chat(ply, "Operation not supported.")
+                    VyHub.Util:print_chat(ply, "Operation not supported.")
                     VyHub:get_theme(theme, function (theme)
                         if theme != nil then
                             ply:vh_open_url(theme.frontend_url .. "/bans")
@@ -921,6 +961,22 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             if VyHub.Ban.replace_xadmin2_bans then
                 VyHub.Ban:replace_xadmin2_bans()
             end
+        end
+    end)
+
+    concommand.Add("vh_ban", function(ply, _, args)
+        if not args[1] or not args[2] or not args[3] then return end
+        
+        if VyHub.Util:is_server(ply) then
+            VyHub.Ban:create(args[1], args[2], args[3])
+        end
+    end)
+
+    concommand.Add("vh_unban", function(ply, _, args)
+        if not args[1] then return end
+        
+        if VyHub.Util:is_server(ply) then
+            VyHub.Ban:unban(args[1])
         end
     end)
 end)

@@ -18,7 +18,7 @@ function VyHub.Group:refresh()
             for _, group in pairs(VyHub.groups) do
                 local server_group = group.properties['server_group']
 
-                if serAppliedPacketModelver_group != nil and isstring(server_group.value) then
+                if server_group != nil and isstring(server_group.value) then
                     VyHub.groups_mapped[server_group.value] = group
                 else
                     no_server_group[group.name] = group
@@ -188,6 +188,8 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
                         ulx_adduser( steamid32, allow, deny, groupname )
                     end
                 end)
+            else
+                ulx_adduser( steamid32, allow, deny, groupname )
 			end
 		end
 
@@ -236,6 +238,8 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
                         end)
 					end
 				end
+            else
+                servergaurd_setrank(self, target, rank, length)
 			end
 		end
 	end

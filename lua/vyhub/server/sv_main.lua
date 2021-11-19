@@ -3,6 +3,8 @@ VyHub.theme = VyHub.theme or nil
 function VyHub:server_data_ready()
     VyHub:msg(string.format("I am server %s in bundle %s.", VyHub.server.name, VyHub.server.serverbundle.name))
 
+    VyHub.ready = true
+
     hook.Run("vyhub_ready")
 end
 
@@ -15,7 +17,9 @@ function VyHub:get_theme(callback)
         VyHub.theme = result
         VyHub.Cache:save('theme', result)
 
-        callback(theme)
+        if callback then
+            callback(theme)
+        end
     end, function ()
         local theme = VyHub.Cache:get('theme')
 
@@ -23,7 +27,9 @@ function VyHub:get_theme(callback)
             VyHub:msg("Could not get theme!", "error")
         end
 
-        callback(theme)
+        if callback then
+            callback(theme)
+        end
     end)
 end
 
@@ -37,6 +43,8 @@ hook.Add("vyhub_api_ready", "vyhub_main_vyhub_api_ready", function ()
     end, function (code, result)
         VyHub:msg(string.format("Could not find server with id %s", VyHub.Config.server_id))
     end)
+
+    VyHub:get_theme()
 end)
 
 hook.Add("vyhub_api_failed", "vyhub_main_vyhub_api_failed", function ()
