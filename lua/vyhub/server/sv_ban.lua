@@ -291,8 +291,8 @@ function VyHub.Ban:create_ban_msg(ban)
     .. VyHub.lang.other.unban_date .. ": " .. unban_date .. "\n" 
     .. VyHub.lang.other.admin .. ": " .. creator_username .. "\n\n" 
 
-    if VyHub.theme != nil and VyHub.theme.frontend_url != nil then
-        msg = msg .. VyHub.lang.other.unban_url .. ": " .. VyHub.theme.frontend_url .. "\n"
+    if VyHub.frontend_url != nil then
+        msg = msg .. VyHub.lang.other.unban_url .. ": " .. VyHub.frontend_url .. "\n"
     end
 
     return msg
@@ -481,9 +481,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             local steamid64 = util.SteamIDTo64(steamid32)
 
             if steamid64 then
-                VyHub:get_theme(function (theme)
-                    if theme != nil then
-                        ply:vh_open_url(theme.frontend_url .. "/bans")
+                VyHub:get_frontend_url(function (frontend_url)
+                    if frontend_url != nil then
+                        ply:vh_open_url(frontend_url .. "/bans")
                     end
                 end)
             end
@@ -727,9 +727,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             function xAdmin.Admin.ModifyBan(admin, ply, reason, length)
                 if not VyHub.Util:is_server(admin) then
                     VyHub.Util:print_chat(ply, "Operation not supported.")
-                    VyHub:get_theme(theme, function (theme)
-                        if theme != nil then
-                            ply:vh_open_url(theme.frontend_url .. "/bans")
+                    VyHub:get_frontend_url(function (frontend_url)
+                        if frontend_url != nil then
+                            ply:vh_open_url(frontend_url .. "/bans")
                         end
                     end)
                 else

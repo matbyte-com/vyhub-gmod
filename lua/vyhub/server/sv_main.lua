@@ -1,4 +1,4 @@
-VyHub.theme = VyHub.theme or nil
+VyHub.frontend_url = VyHub.frontend_url or nil
 
 function VyHub:server_data_ready()
     VyHub:msg(string.format("I am server %s in bundle %s.", VyHub.server.name, VyHub.server.serverbundle.name))
@@ -8,27 +8,27 @@ function VyHub:server_data_ready()
     hook.Run("vyhub_ready")
 end
 
-function VyHub:get_theme(callback)
-    if VyHub.theme != nil then
-        return VyHub.theme
+function VyHub:get_frontend_url(callback)
+    if VyHub.frontend_url != nil then
+        return VyHub.frontend_url
     end
 
-    VyHub.API:get('/design/theme', nil, nil, function (code, result)
-        VyHub.theme = result
-        VyHub.Cache:save('theme', result)
+    VyHub.API:get('/general/frontend-url', nil, nil, function (code, result)
+        VyHub.frontend_url = result
+        VyHub.Cache:save('frontend_url', result.frontend_url)
 
         if callback then
-            callback(theme)
+            callback(VyHub.frontend_url)
         end
     end, function ()
-        local theme = VyHub.Cache:get('theme')
+        local frontend_url = VyHub.Cache:get('frontend_url')
 
-        if theme == nil then
-            VyHub:msg("Could not get theme!", "error")
+        if frontend_url == nil then
+            VyHub:msg("Could not get frontend_url!", "error")
         end
 
         if callback then
-            callback(theme)
+            callback(frontend_url)
         end
     end)
 end
@@ -44,7 +44,7 @@ hook.Add("vyhub_api_ready", "vyhub_main_vyhub_api_ready", function ()
         VyHub:msg(string.format("Could not find server with id %s", VyHub.Config.server_id))
     end)
 
-    VyHub:get_theme()
+    VyHub:get_frontend_url()
 end)
 
 hook.Add("vyhub_api_failed", "vyhub_main_vyhub_api_failed", function ()
