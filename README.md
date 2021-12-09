@@ -2,7 +2,7 @@
 
 This is the VyHub addon for Garrys' Mod.
 
-# Installtion
+# Installation
 
 - Clone this repo into your `addons/` folder.
 - Edit `lua/vyhub/config/sv_config.lua`:
