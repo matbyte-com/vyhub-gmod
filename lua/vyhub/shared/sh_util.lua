@@ -11,7 +11,7 @@ function VyHub.Util:format_datetime(unix_timestamp)
     local tz_wrong = os.date("%z", unix_timestamp)
     local timezone = string.format("%s:%s", string.sub(tz_wrong, 1, 3), string.sub(tz_wrong, 4, 5))
 
-    return os.date("%Y-%m-%dT%H:%M:%S" .. timezone)
+    return os.date("%Y-%m-%dT%H:%M:%S" .. timezone, unix_timestamp)
 end
 
 function VyHub.Util:is_server(obj)

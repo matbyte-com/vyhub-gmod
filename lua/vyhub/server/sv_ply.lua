@@ -130,7 +130,7 @@ function VyHub.Player:check_group(ply, callback)
             elseif ulx then
                 ULib.ucl.addUser( ply:SteamID(), {}, {}, group, true )
             elseif sam then
-                sam.player.set_rank(ply, group, 0)
+                sam.player.set_rank(ply, group, 0, true)
             else
                 ply:SetUserGroup(group, true)
             end

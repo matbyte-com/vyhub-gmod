@@ -40,6 +40,10 @@ function VyHub.Group:refresh()
 end
 
 function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
+    if seconds != nil and seconds == 0 then
+        seconds = nil
+    end
+
     if VyHub.groups_mapped == nil then
         VyHub:msg("Groups not initialized yet. Please try again later.", "error")
 
@@ -164,7 +168,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 
 	local _setusergroup = meta_ply.SetUserGroup
 
-	if not ULib and not serverguard then
+	if not ULib and not serverguard and not sam then
 		meta_ply.SetUserGroup = function(ply, name, ignore_vh)
 			if not ignore_vh then
 				if VyHub.Group:set(ply:SteamID64(), name) or VyHub.Config.disable_group_check then
@@ -243,4 +247,30 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 			end
 		end
 	end
+
+    if sam then
+        local sam_setrank = sam.player.set_rank
+
+        function sam.player.set_rank(ply, rank, length, ignore_vh)
+            if not ignore_vh then
+                if not sam.isnumber(length) or length < 0 then
+                    length = nil
+                end
+
+                seconds = nil
+
+                if length != nil then
+                    seconds = math.Round(length * 60, 0)
+                end
+
+                VyHub.Group:set(ply:SteamID64(), rank, seconds, nil, function(success)
+                    if success then
+                        sam_setrank(ply, rank, length)
+                    end
+                end)
+            else
+                sam_setrank(ply, rank, length)
+            end
+        end
+    end
 end)

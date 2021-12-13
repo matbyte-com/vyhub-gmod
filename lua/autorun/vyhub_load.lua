@@ -25,10 +25,10 @@ end
 
 VyHub:msg("Initializing...")
 
-if file.Exists( vyhub_root .. '/config/sv_config.lua', "LUA") then
-    hook.Run("vyhub_loading_start")
+if SERVER then
+    if file.Exists( vyhub_root .. '/config/sv_config.lua', "LUA") then
+        hook.Run("vyhub_loading_start")
 
-    if SERVER then
         -- libs
         VyHub:msg("Loading lib files...")
         local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
@@ -73,49 +73,60 @@ if file.Exists( vyhub_root .. '/config/sv_config.lua', "LUA") then
         game.ConsoleCommand("sv_hibernate_think 1\n")
 
         file.CreateDir("vyhub")
+
+        timer.Simple(2, function()
+            hook.Run("vyhub_loading_finish")
+        end)
+        
+        VyHub:msg("Finished loading!")
+    else
+        VyHub:msg("Could not find lua/vyhub/config/sv_config.lua. Please make sure it exists.", "error")
+    end
+end
+
+
+if CLIENT then
+    hook.Run("vyhub_loading_start")
+    
+    -- libs
+    VyHub:msg("Loading lib files...")
+    local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        include( vyhub_root .. "/lib/" .. file )
     end
 
-    if CLIENT then
-        -- libs
-        VyHub:msg("Loading lib files...")
-        local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
-        for _, file in ipairs( files ) do
-            include( vyhub_root .. "/lib/" .. file )
+    --Config Files
+    VyHub:msg("Loading config files...")
+    local files = file.Find( vyhub_root .."/config/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        if not string.StartWith(file, 'sv_') then
+            include( vyhub_root .. "/config/" .. file )
         end
+    end
 
-        --Config Files
-        VyHub:msg("Loading config files...")
-        local files = file.Find( vyhub_root .."/config/*.lua", "LUA" )
-        for _, file in ipairs( files ) do
-            if not string.StartWith(file, 'sv_') then
-                include( vyhub_root .. "/config/" .. file )
-            end
-        end
+    -- Language
+    VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
+    include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
 
-        -- Language
-        VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
-        include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
+    --Client Files
+    VyHub:msg("Loading client files...")
+    local files = file.Find( vyhub_root .."/client/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        include( vyhub_root .."/client/" .. file )
+    end
 
-        --Client Files
-        VyHub:msg("Loading client files...")
-        local files = file.Find( vyhub_root .."/client/*.lua", "LUA" )
-        for _, file in ipairs( files ) do
-            include( vyhub_root .."/client/" .. file )
-        end
-
-        --Shared Files
-        VyHub:msg("Loading shared files...")
-        local files = file.Find( vyhub_root .."/shared/*.lua", "LUA" )
-        for _, file in ipairs( files ) do
-            include( vyhub_root .. "/shared/" .. file )
-        end
+    --Shared Files
+    VyHub:msg("Loading shared files...")
+    local files = file.Find( vyhub_root .."/shared/*.lua", "LUA" )
+    for _, file in ipairs( files ) do
+        include( vyhub_root .. "/shared/" .. file )
     end
 
     timer.Simple(2, function()
         hook.Run("vyhub_loading_finish")
     end)
-
+    
     VyHub:msg("Finished loading!")
-else
-    VyHub:msg("Could not find lua/vyhub/config/sv_config.lua. Please make sure it exists.", "error")
 end
+
+

@@ -316,7 +316,7 @@ hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
         if VyHub.Ban:check_player_banned(steamid64) then
             local msg = "You are banned from this server."
             
-            local bans = VyHub.bans[steamid64]
+            local bans = VyHub.bans[steamid64] or {}
 
             if table.Count(bans) > 0 then
                 local ban = bans[1]
