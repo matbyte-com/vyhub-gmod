@@ -12,7 +12,7 @@ function VyHub.Statistic:add_one_minute()
     for _, ply in pairs(player.GetHumans()) do
         local steamid = ply:SteamID64()
         ply:VyHubID(function (user_id)
-            if user_id == nil then
+            if user_id == nil or string.len(user_id) < 10 then
                 VyHub:msg(f("Could not add playtime for user %s", steamid))
                 return
             end
@@ -34,6 +34,11 @@ function VyHub.Statistic:send_playtime()
 
         for user_id, seconds in pairs(VyHub.Statistic.playtime) do
             local hours = math.Round(seconds / 60 / 60, 2)
+
+            if string.len(user_id) < 10 then
+                VyHub.Statistic.playtime[user_id] = nil
+                return
+            end
 
             VyHub.API:post("/user/attribute/", nil, {
                 definition_id = attr_def.id,

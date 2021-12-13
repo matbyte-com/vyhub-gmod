@@ -14,8 +14,8 @@ function VyHub:get_frontend_url(callback)
     end
 
     VyHub.API:get('/general/frontend-url', nil, nil, function (code, result)
-        VyHub.frontend_url = result
-        VyHub.Cache:save('frontend_url', result.frontend_url)
+        VyHub.frontend_url = result.frontend_url
+        VyHub.Cache:save('frontend_url', VyHub.frontend_url)
 
         if callback then
             callback(VyHub.frontend_url)
