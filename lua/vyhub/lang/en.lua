@@ -1,7 +1,7 @@
 VyHub.lang = {
     ply = {
         group_changed = "Your group has been changed to <green>%s</green>.",
-
+        banned = "Player <green>%s</green> has been <red>banned for %s</red>. Reason: <green>%s</green>"
     },
     warning = {
         error = "Error while adding warning for player <green>%s</green>",
@@ -15,6 +15,8 @@ VyHub.lang = {
         admin = "Admin",
         never = "Never",
         unknown = "Unknown",
+        minutes = "Minutes",
+        permanently = "Permanently",
         unban_url = "Unban URL",
     }
 }

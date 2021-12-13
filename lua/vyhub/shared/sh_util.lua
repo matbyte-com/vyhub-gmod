@@ -162,6 +162,13 @@ function VyHub.Util:print_chat_steamid(steamid, message, tag, color)
 end
 
 
+function VyHub.Util:print_chat_all(message, tag, color)
+	for _, ply in pairs(player.GetHumans()) do
+		VyHub.Util:print_chat(ply, message, tag, color)
+	end
+end
+
+
 function VyHub.Util:get_player_by_nick(nick)
 	nick = string.lower(nick);
 	

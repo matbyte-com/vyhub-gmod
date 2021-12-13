@@ -242,6 +242,13 @@ function VyHub.Ban:create(steamid, length, reason, creator_steamid)
 
     table.insert(VyHub.Ban.ban_queue[steamid], data)
 
+    local ply = player.GetBySteamID64(steamid)
+    if IsValid(ply) then
+        local lstr = length == nil and VyHub.lang.other.permanently or f("%i %s", length, VyHub.lang.other.minutes)
+
+        VyHub.Util:print_chat_all(f(VyHub.lang.ply.banned, ply:Nick(), lstr, reason))
+    end
+
     VyHub.Ban:kick_banned_players()
     VyHub.Ban:save_queues()
     VyHub.Ban:handle_queue()
