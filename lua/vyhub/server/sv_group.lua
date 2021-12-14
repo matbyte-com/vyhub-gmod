@@ -168,7 +168,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 
 	local _setusergroup = meta_ply.SetUserGroup
 
-	if not ULib and not serverguard and not sam then
+	if not ULib and not serverguard and not sam and not (xAdmin and xAdmin.Admin.RegisterBan) then
 		meta_ply.SetUserGroup = function(ply, name, ignore_vh)
 			if not ignore_vh then
 				if VyHub.Group:set(ply:SteamID64(), name) or VyHub.Config.disable_group_check then
@@ -179,6 +179,25 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 			end
 		end
 	end
+
+    if xAdmin and xAdmin.Admin.RegisterBan then
+        local xadmin_setgroup = xAdmin.SetGroup
+
+        xAdmin.SetGroup = function(ply, group, ignore_vh)
+            local steamid32 = isstring(ply) and ply or ply:SteamID()
+            local steamid64 = util.SteamIDTo64(steamid32)
+
+			if not ignore_vh then
+				VyHub.Group:set(steamid64, group, nil, nil, function(success)
+                    if success then
+                        xadmin_setgroup( ply, group )
+                    end
+                end)
+            else
+                xadmin_setgroup( ply, group )
+			end
+		end
+    end
 
 	if ULib then
 		local ulx_adduser = ULib.ucl.addUser

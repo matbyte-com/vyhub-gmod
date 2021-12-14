@@ -131,6 +131,8 @@ function VyHub.Player:check_group(ply, callback)
                 ULib.ucl.addUser( ply:SteamID(), {}, {}, group, true )
             elseif sam then
                 sam.player.set_rank(ply, group, 0, true)
+            elseif xAdmin and xAdmin.Admin.RegisterBan then
+                xAdmin.SetGroup(ply, group, true)
             else
                 ply:SetUserGroup(group, true)
             end

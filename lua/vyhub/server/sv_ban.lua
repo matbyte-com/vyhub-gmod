@@ -371,7 +371,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
         end
 
-        local ulx_unban = ULib.unban
+        VyHub.Ban.ulx_unban = VyHub.Ban.ulx_unban or ULib.unban
 
         ULib.unban = function(steamid32, steamid32_admin)
             if VyHub.Config.ulib_replace_bans then
@@ -406,7 +406,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
 
             if not VyHub.Config.ulib_replace_bans then
-                ulx_unban(steamid32, steamid32_admin)
+                VyHub.Ban.ulx_unban(steamid32, steamid32_admin)
             end
         end
 
@@ -569,7 +569,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
         end
 
-        local servergaurd_unban = serverguard["UnbanPlayer"]
+        VyHub.Ban.servergaurd_unban = VyHub.Ban.servergaurd_unban or serverguard["UnbanPlayer"]
 
         function serverguard:UnbanPlayer(steamid32, admin)
             local steamid64_admin = "0"
@@ -591,7 +591,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 end
             end
 
-            servergaurd_unban(self, steamid32, admin)
+            VyHub.Ban.servergaurd_unban(self, steamid32, admin)
         end
 
         concommand.Add("serverguard_addmban", function(ply, _, args)
@@ -666,18 +666,15 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
         end
 
-        xadmin_removeban = xAdmin.RemoveBan
+        VyHub.Ban.xadmin_removeban = VyHub.Ban.xadmin_removeban or xAdmin.RemoveBan
 
         function xAdmin.RemoveBan(steamid64)
             VyHub.Ban:unban(steamid64)
 
-            xadmin_removeban(steamid64)
+            VyHub.Ban.xadmin_removeban(steamid64)
         end
     elseif xAdmin and xAdmin.Admin.RegisterBan then	
         -- xAdmin 2
-
-        GExtension:Print("neutral", "Modifying xAdmin2")
-
         function xAdmin.Admin.RegisterBan(ply, admin, reason, length)
             local steamid64 = nil
             if isstring(ply) then steamid64 = util.SteamIDTo64(ply) elseif IsValid(ply) then steamid64 = ply:SteamID64() end
@@ -689,12 +686,12 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
         end
 
-        xadmin_removeban = xAdmin.Admin.RemoveBan
+        VyHub.Ban.xadmin_removeban = VyHub.Ban.xadmin_removeban or xAdmin.Admin.RemoveBan
 
         function xAdmin.Admin.RemoveBan(steamid64)
             VyHub.Ban:unban(steamid64)
 
-            xadmin_removeban(steamid64)
+            VyHub.Ban.xadmin_removeban(steamid64)
         end
 
         if VyHub.Config.replace_xadmin2_bans then
@@ -748,7 +745,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
     if FAdmin and FAdmin.Commands and FAdmin.Commands.AddCommand then
         if FAdmin.GlobalSetting.FAdmin then
-            hook.Add("FAdmin_UnBan", "GExtension_FAdmin_Unban", function(ply, steamid32)
+            hook.Add("FAdmin_UnBan", "vyhub_FAdmin_UnBan", function(ply, steamid32)
                 local steamid64 = util.SteamIDTo64(steamid32)
 
                 local steamid64_admin = ""
@@ -918,7 +915,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             end
         end
 
-        local sam_unban = sam.player.unban
+        VyHub.Ban.sam_unban = VyHub.Ban.sam_unban or sam.player.unban
 
         function sam.player.unban(steamid, admin_steamid)
             local steamid64 = util.SteamIDTo64(steamid)
@@ -935,7 +932,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 VyHub.Ban:unban(steamid64)
             end
 
-            sam_unban(steamid, admin_steamid)
+            VyHub.Ban.sam_unban(steamid, admin_steamid)
         end
     end
 
