@@ -43,7 +43,7 @@ function VyHub.Statistic:send_playtime()
             VyHub.API:post("/user/attribute/", nil, {
                 definition_id = attr_def.id,
                 user_id = user_id,
-                server_id = VyHub.server.id,
+                serverbundle_id = VyHub.server.serverbundle.id,
                 value = tostring(hours),
             }, function (code, result)
                 VyHub.Statistic.playtime[user_id] = 0
