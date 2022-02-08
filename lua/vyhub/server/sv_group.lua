@@ -86,7 +86,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
             begin = VyHub.Util.format_datetime(),
             ["end"] = end_date,
             group_id = group.id,
-            morph_user_id  = processor_id,
+            serverbundle_id = VyHub.server.serverbundle.id
         }, function (code, result)
             VyHub:msg(f("Added %s to group %s.", steamid, groupname), "success")
 
