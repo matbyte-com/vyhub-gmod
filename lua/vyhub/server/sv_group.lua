@@ -5,7 +5,7 @@ VyHub.groups = VyHub.groups or nil
 VyHub.groups_mapped = VyHub.groups_mapped or nil
 
 function VyHub.Group:refresh()
-    VyHub.API:get("/group", nil, { serverbundle_id = VyHub.server.serverbundle_id }, function(code, result)
+    VyHub.API:get("/group/", nil, nil, function(code, result)
         if result != VyHub.groups then
             VyHub.groups = result
         
@@ -94,7 +94,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
 
             if IsValid(ply) then
                 VyHub.Player:refresh(ply)
-            end
+            end 
 
             if callback then
                 callback(true)
@@ -117,10 +117,10 @@ function VyHub.Group:remove(steamid, processor_id, callback)
             end
         end
 
-        local url = '/user/%s/membership'
+        local url = f('/user/%%s/membership?serverbundle_id=%s', VyHub.server.serverbundle.id)
 
         if processor_id != nil then
-            url = url .. '?morph_user_id=' .. processor_id
+            url = url .. '&morph_user_id=' .. processor_id
         end
 
         VyHub.API:delete(url, {user.id}, function (code, result)
