@@ -32,26 +32,39 @@ function VyHub.Statistic:send_playtime()
             return
         end
 
-        for user_id, seconds in pairs(VyHub.Statistic.playtime) do
-            local hours = math.Round(seconds / 60 / 60, 2)
+        user_ids = table.GetKeys(VyHub.Statistic.playtime)
+            
+        timer.Create("vyhub_send_stats", 0.3, table.Count(user_ids), function ()
+            i =  table.Count(user_ids)
+            user_id = user_ids[i]
+            seconds = VyHub.Statistic.playtime[user_id]
+            table.remove(user_ids, i)
 
-            if string.len(user_id) < 10 then
+            if seconds > 0 then
+                local hours = math.Round(seconds / 60 / 60, 2)
+
+                if hours > 0 then
+                    if string.len(user_id) < 10 then
+                        VyHub.Statistic.playtime[user_id] = nil
+                        return
+                    end
+
+                    VyHub.API:post("/user/attribute/", nil, {
+                        definition_id = attr_def.id,
+                        user_id = user_id,
+                        serverbundle_id = VyHub.server.serverbundle.id,
+                        value = tostring(hours),
+                    }, function (code, result)
+                        VyHub.Statistic.playtime[user_id] = nil
+                        VyHub.Statistic:save_playtime()
+                    end, function (code, reason)
+                        VyHub:msg(f("Could not send %s seconds playtime of %s to API.", seconds, user_id), "warning")
+                    end)
+                end
+            else
                 VyHub.Statistic.playtime[user_id] = nil
-                return
             end
-
-            VyHub.API:post("/user/attribute/", nil, {
-                definition_id = attr_def.id,
-                user_id = user_id,
-                serverbundle_id = VyHub.server.serverbundle.id,
-                value = tostring(hours),
-            }, function (code, result)
-                VyHub.Statistic.playtime[user_id] = 0
-                VyHub.Statistic:save_playtime()
-            end, function (code, reason)
-                VyHub:msg(f("Could not send %s seconds playtime of %s to API.", seconds, user_id), "warning")
-            end)
-        end
+        end)
     end)
 end
 
