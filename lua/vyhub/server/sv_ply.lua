@@ -112,14 +112,18 @@ function VyHub.Player:check_group(ply, callback)
             return
         end
 
-        local server_group = highest.properties['server_group']
         local group = nil
 
-        if server_group == nil or not isstring(server_group.value) then
-            VyHub:msg(string.format("Could not find server_group property for group %s. Using name instead.", highest.name), "warning")
-            group = highest.name
-        else
-            group = server_group.value
+        for _, mapping in pairs(highest.mappings) do
+            if mapping.serverbundle_id == VyHub.server.serverbundle.id then
+                group = mapping.name
+                break
+            end
+        end
+
+        if group == nil then
+            VyHub:msg(string.format("Could not find group name mapping for group %s.", highest.name), "error")
+            return
         end
 
         curr_group = ply:GetUserGroup()

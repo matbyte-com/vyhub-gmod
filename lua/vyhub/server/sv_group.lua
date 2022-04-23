@@ -13,21 +13,12 @@ function VyHub.Group:refresh()
 
             VyHub.groups_mapped = {}
 
-            local no_server_group = {}
-
             for _, group in pairs(VyHub.groups) do
-                local server_group = group.properties['server_group']
-
-                if server_group != nil and isstring(server_group.value) then
-                    VyHub.groups_mapped[server_group.value] = group
-                else
-                    no_server_group[group.name] = group
-                end
-            end
-
-            for name, group in pairs(no_server_group) do
-                if VyHub.groups_mapped[name] == nil then
-                    VyHub.groups_mapped[name] = group
+                for _, mapping in pairs(group.mappings) do
+                    if mapping.serverbundle_id == VyHub.server.serverbundle.id then
+                        VyHub.groups_mapped[mapping.name] = group
+                        break
+                    end
                 end
             end
         end
