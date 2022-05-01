@@ -6,3 +6,11 @@ VyHub.Config.player_refresh_time = 60
 VyHub.Config.group_refresh_time = 300
 
 VyHub.Config.replace_ulib_bans = true
+
+VyHub.Config.ban_message = ">>> Ban Message <<<" .. "\n\n"
+.. VyHub.lang.other.reason .. ": %reason%" .. "\n" 
+.. VyHub.lang.other.ban_date .. ": %ban_date%" .. "\n" 
+.. VyHub.lang.other.unban_date .. ": %unban_date%" .. "\n" 
+.. VyHub.lang.other.admin .. ": %admin%" .. "\n" 
+.. VyHub.lang.other.id .. ": %id%" .. "\n\n" 
+.. VyHub.lang.other.unban_url .. ": %unban_url%" .. "\n\n" 

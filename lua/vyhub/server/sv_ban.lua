@@ -15,6 +15,14 @@ VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
 ]]--
 
 
+local default_ban_msg = ">>> Ban Message <<<" .. "\n\n"
+.. VyHub.lang.other.reason .. ": %reason%" .. "\n" 
+.. VyHub.lang.other.ban_date .. ": %ban_date%" .. "\n" 
+.. VyHub.lang.other.unban_date .. ": %unban_date%" .. "\n" 
+.. VyHub.lang.other.admin .. ": %admin%" .. "\n" 
+.. VyHub.lang.other.id .. ": %id%" .. "\n\n" 
+.. VyHub.lang.other.unban_url .. ": %unban_url%" .. "\n\n" 
+
 function VyHub.Ban:check_player_banned(steamid)
     local bans = VyHub.bans[steamid]
     local queued_bans = VyHub.Ban.ban_queue[steamid]
@@ -289,18 +297,19 @@ function VyHub.Ban:clear()
 end
 
 function VyHub.Ban:create_ban_msg(ban)
+    local msg = VyHub.Config.ban_message or default_ban_msg
+
     local unban_date = ban.ends_on != nil and ban.ends_on or VyHub.lang.other.never
     local creator_username = ban.creator != nil and ban.creator.username or VyHub.lang.other.unknown
+    local id = string.upper(string.sub(ban.id, 1, 8))
+    local unban_url = VyHub.Config.unban_url or VyHub.frontend_url or '-'
 
-    local msg = "                            > Ban Message <" .. "\n\n"
-    .. VyHub.lang.other.reason .. ": " .. ban.reason .. "\n" 
-    .. VyHub.lang.other.ban_date .. ": " .. ban.created_on .. "\n" 
-    .. VyHub.lang.other.unban_date .. ": " .. unban_date .. "\n" 
-    .. VyHub.lang.other.admin .. ": " .. creator_username .. "\n\n" 
-
-    if VyHub.frontend_url != nil then
-        msg = msg .. VyHub.lang.other.unban_url .. ": " .. VyHub.frontend_url .. "\n"
-    end
+    msg = string.Replace(msg, '%reason%', ban.reason)
+    msg = string.Replace(msg, '%ban_date%', ban.created_on)
+    msg = string.Replace(msg, '%unban_date%', unban_date)
+    msg = string.Replace(msg, '%admin%', creator_username)
+    msg = string.Replace(msg, '%id%', id)
+    msg = string.Replace(msg, '%unban_url%', unban_url)
 
     return msg
 end
@@ -321,7 +330,7 @@ hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
 
     hook.Add("CheckPassword", "vyhub_ban_CheckPassword", function(steamid64, ip)
         if VyHub.Ban:check_player_banned(steamid64) then
-            local msg = "You are banned from this server."
+            local msg = VyHub.lang.ply.banned_self
             
             local bans = VyHub.bans[steamid64] or {}
 
