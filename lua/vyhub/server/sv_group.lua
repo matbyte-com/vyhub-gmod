@@ -4,6 +4,8 @@ VyHub.Group = VyHub.Group or {}
 VyHub.groups = VyHub.groups or nil
 VyHub.groups_mapped = VyHub.groups_mapped or nil
 
+util.AddNetworkString("vyhub_group_data")
+
 function VyHub.Group:refresh()
     VyHub.API:get("/group/", nil, nil, function(code, result)
         if result != VyHub.groups then
@@ -21,6 +23,10 @@ function VyHub.Group:refresh()
                     end
                 end
             end
+
+            net.Start("vyhub_group_data")
+                net.WriteTable(VyHub.groups_mapped)
+            net.Broadcast()
         end
     end, function (code, reason)
         VyHub:msg("Could not refresh groups. Retrying in a minute.", "error")
@@ -144,6 +150,12 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
     timer.Create("vyhub_group_refresh", VyHub.Config.group_refresh_time, 0, function ()
         VyHub.Group:refresh()
     end)
+
+    hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
+		net.Start("vyhub_group_data")
+			net.WriteTable(VyHub.groups_mapped)
+		net.Send(ply)
+	end)
 
 	concommand.Add("vyhub_setgroup", function(ply, _, args)
 		if VyHub.Util:is_server(ply) then

@@ -5,7 +5,7 @@ VyHub.Player.table = VyHub.Player.table or {}
 
 local meta_ply = FindMetaTable("Player")
 
-function VyHub.Player:Initialize(ply, retry)
+function VyHub.Player:initialize(ply, retry)
     if not IsValid(ply) then return end
 
     VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), ply:SteamID64()))
@@ -34,7 +34,7 @@ function VyHub.Player:Initialize(ply, retry)
             VyHub:msg(string.format("Could not check if users %s exists. Retrying in a minute..", ply:SteamID64()), "error")
 
             timer.Simple(60, function ()
-                VyHub.Player:Initialize(ply)
+                VyHub.Player:initialize(ply)
             end)
 
             return
@@ -44,7 +44,7 @@ function VyHub.Player:Initialize(ply, retry)
             VyHub:msg(string.format("Could not create user %s. Retrying in a minute..", ply:SteamID64()), "error")
 
             timer.Simple(60, function()
-                VyHub.Player:Initialize(ply)
+                VyHub.Player:initialize(ply)
             end)
 
             return
@@ -53,9 +53,9 @@ function VyHub.Player:Initialize(ply, retry)
         VyHub:msg(string.format("No existing user found for steam id %s. Creating..", ply:SteamID64()))
 
         VyHub.API:post('/user/', nil, { identifier = ply:SteamID64(), type = 'STEAM' }, function()
-            VyHub.Player:Initialize(ply, true)
+            VyHub.Player:initialize(ply, true)
         end, function()
-            VyHub.Player:Initialize(ply, true)
+            VyHub.Player:initialize(ply, true)
         end)
     end)
 end
@@ -180,7 +180,7 @@ function meta_ply:VyHubID(callback)
 end
 
 hook.Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)
-    VyHub.Player:Initialize(ply)
+    VyHub.Player:initialize(ply)
 end)
 
 hook.Add("PlayerInitialSpawn","vyhub_ply_PlayerInitialSpawn", function(ply)
