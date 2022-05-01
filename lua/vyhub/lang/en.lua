@@ -10,6 +10,7 @@ VyHub.lang = {
     },
     other = {
         reason = "Reason",
+        dead = "DEAD",
         ban_date = "Ban date",
         unban_date = "Unban date",
         admin = "Admin",
