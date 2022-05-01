@@ -115,7 +115,7 @@ function VyHub.Player:check_group(ply, callback)
         local group = nil
 
         for _, mapping in pairs(highest.mappings) do
-            if mapping.serverbundle_id == VyHub.server.serverbundle.id then
+            if mapping.serverbundle_id == nil or mapping.serverbundle_id == VyHub.server.serverbundle.id then
                 group = mapping.name
                 break
             end
