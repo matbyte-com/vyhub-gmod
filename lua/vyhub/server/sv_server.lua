@@ -15,11 +15,29 @@ function VyHub.Server:get_extra(key)
 end
 
 function VyHub.Server:update_status()
+    local user_activities = {}
+
+    for _, ply in pairs(player.GetHumans()) do
+        local id = ply:VyHubID()
+
+        if id != nil then
+            local tt = string.FormattedTime( ply:TimeConnected() )
+
+            table.insert(user_activities, { user_id = id, extra = { 
+                Score = ply:Frags(), 
+                Deaths = ply:Deaths(), 
+                Nickname = ply:Nick(),
+                Playtime = f('%02d:%02d:%02d', tt.h, tt.m, tt.s), 
+            }})
+        end
+    end
+
     local data = {
         users_max = VyHub.Server.max_slots_visible,
         users_current = #player.GetAll(),
         map = game.GetMap(),
         is_alive = true,
+        user_activities = user_activities,
     }
 
     VyHub:msg(string.format("Updating status: %s", json.encode(data)), "debug")

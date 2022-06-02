@@ -154,29 +154,31 @@ function VyHub.Player:refresh(ply, callback)
 end
 
 function meta_ply:VyHubID(callback)
-    local id = self:GetNWString("vyhub_id", nil)
+    if IsValid(self) then
+        local id = self:GetNWString("vyhub_id", nil)
 
-    if id == nil then
-        VyHub.Player:get(self:SteamID64(), function(user)
-            if user != nil then
-                ply:SetNWString("vyhub_id", user.id)
+        if id == nil then
+            VyHub.Player:get(self:SteamID64(), function(user)
+                if user != nil then
+                    ply:SetNWString("vyhub_id", user.id)
 
-                if callback then
-                    callback(user.id)
+                    if callback then
+                        callback(user.id)
+                    end
+                else
+                    if callback then
+                        callback(nil)
+                    end
                 end
-            else
-                if callback then
-                    callback(nil)
-                end
+            end)
+        else
+            if callback then
+                callback(id)
             end
-        end)
-    else
-        if callback then
-            callback(id)
         end
+        
+        return id
     end
-    
-    return id
 end
 
 hook.Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)
