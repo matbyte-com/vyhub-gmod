@@ -37,9 +37,7 @@ if SERVER then
             include( vyhub_root .. "/lib/" .. file )
         end
 
-        -- Config Files
-        VyHub:msg("Loading config files...")
-        include( vyhub_root .. '/config/sv_config.lua' )
+        -- Shared Config
         include( vyhub_root .. '/config/sh_config.lua' )
         AddCSLuaFile( vyhub_root .. "/config/sh_config.lua" )
 
@@ -47,6 +45,10 @@ if SERVER then
         VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
         include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
         AddCSLuaFile( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
+
+        -- Config Files
+        VyHub:msg("Loading config files...")
+        include( vyhub_root .. '/config/sv_config.lua' )
 
         --Client Files
         VyHub:msg("Loading client files...")
