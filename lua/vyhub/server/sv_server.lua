@@ -84,4 +84,12 @@ hook.Add("vyhub_ready", "vyhub_server_vyhub_ready", function ()
     timer.Create("vyhub_status_update", 60, 0, function ()
         VyHub.Server:update_status()
     end)
+
+    VyHub.Util:register_chat_command("!dashboard", function(ply, args)
+		if ply and IsValid(ply) then
+            VyHub:get_frontend_url(function (url)
+                ply:vh_open_url(f('%s/server-dashboard/%s', url, VyHub.server.id))
+            end)
+		end
+	end)
 end)

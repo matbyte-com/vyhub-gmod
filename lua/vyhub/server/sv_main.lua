@@ -10,6 +10,10 @@ end
 
 function VyHub:get_frontend_url(callback)
     if VyHub.frontend_url != nil then
+        if callback then
+            callback(VyHub.frontend_url)
+        end
+        
         return VyHub.frontend_url
     end
 
