@@ -161,6 +161,18 @@ function VyHub.Util:print_chat_steamid(steamid, message, tag, color)
 	end
 end
 
+function VyHub.Util:play_sound_steamid(steamid, url)
+	if steamid != nil and steamid != false then
+		ply = player.GetBySteamID64(steamid)
+	
+		if IsValid(ply) then
+			net.Start("vyhub_run_lua")
+				net.WriteString([[sound.PlayURL ( "]] .. url .. [[", "", function() end)]])
+			net.Send(ply)
+		end
+	end
+end
+
 
 function VyHub.Util:print_chat_all(message, tag, color)
 	for _, ply in pairs(player.GetHumans()) do

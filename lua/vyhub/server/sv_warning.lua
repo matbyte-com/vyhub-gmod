@@ -13,7 +13,7 @@ function VyHub.Warning:create(steamid, reason, processor_steamid)
                 return
             end
 
-            local url = '/warning'
+            local url = '/warning/'
 
             if processor != nil then
                 url = url .. f('?morph_user_id=%s', processor.id)
@@ -28,6 +28,7 @@ function VyHub.Warning:create(steamid, reason, processor_steamid)
                 VyHub:msg(f("Added warning for player %s: %s", user.username, reason))
                 VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.created, user.username, reason))
                 VyHub.Util:print_chat_steamid(steamid, f(VyHub.lang.warning.received, processor.username, reason))
+                VyHub.Util:play_sound_steamid(steamid, "https://www.dropbox.com/s/q8dget89wvdcyog/negativebeep.wav?dl=1")
             end, function (code, err_reason, _, err_text)
                 VyHub:msg(f("Error while adding warning for player %s: %s", user.username, err_text), "error")
                 VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.error, user.username, err_text))
