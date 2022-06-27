@@ -299,14 +299,15 @@ end
 function VyHub.Ban:create_ban_msg(ban)
     local msg = VyHub.Config.ban_message or default_ban_msg
 
-    local unban_date = ban.ends_on != nil and ban.ends_on or VyHub.lang.other.never
+    local created_on = date(ban.created_on):tolocal():fmt(VyHub.Config.date_format)
+    local ends_on = ban.ends_on != nil and date(ban.ends_on):tolocal():fmt(VyHub.Config.date_format) or VyHub.lang.other.never
     local creator_username = ban.creator != nil and ban.creator.username or VyHub.lang.other.unknown
     local id = string.upper(string.sub(ban.id, 1, 8))
     local unban_url = VyHub.Config.unban_url or VyHub.frontend_url or '-'
 
     msg = string.Replace(msg, '%reason%', ban.reason)
-    msg = string.Replace(msg, '%ban_date%', ban.created_on)
-    msg = string.Replace(msg, '%unban_date%', unban_date)
+    msg = string.Replace(msg, '%ban_date%', created_on)
+    msg = string.Replace(msg, '%unban_date%', ends_on)
     msg = string.Replace(msg, '%admin%', creator_username)
     msg = string.Replace(msg, '%id%', id)
     msg = string.Replace(msg, '%unban_url%', unban_url)

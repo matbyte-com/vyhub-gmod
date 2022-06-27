@@ -6,6 +6,8 @@
 -- Copyright (C) 2013-2021, by Thijs Schreijer
 -- Licensed under MIT, http://opensource.org/licenses/MIT
 
+-- https://github.com/Tieske/date
+
 --[[ CONSTANTS ]]--
 local HOURPERDAY  = 24
 local MINPERHOUR  = 60
