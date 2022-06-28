@@ -186,13 +186,14 @@ hook.Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)
 end)
 
 hook.Add("PlayerInitialSpawn","vyhub_ply_PlayerInitialSpawn", function(ply)
-	if VyHub.ready then
-		hook.Run("vyhub_ply_connected", ply)
-	else
-		VyHub.Player.connect_queue[#VyHub.Player.connect_queue+1] = ply
-	end
+    if IsValid(ply) and not ply:IsBot() then
+        if VyHub.ready then
+            hook.Run("vyhub_ply_connected", ply)
+        else
+            VyHub.Player.connect_queue[#VyHub.Player.connect_queue+1] = ply
+        end
+    end
 end)
-
 
 hook.Add("vyhub_ready", "vyhub_ply_vyhub_ready", function ()
     timer.Simple(5, function()
