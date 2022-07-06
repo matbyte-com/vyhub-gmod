@@ -28,6 +28,7 @@ function VyHub.Server:update_status()
                 Deaths = ply:Deaths(), 
                 Nickname = ply:Nick(),
                 Playtime = f('%02d:%02d:%02d', tt.h, tt.m, tt.s), 
+                Ping = f('%i ms', ply:Ping()),
             }})
         end
     end
