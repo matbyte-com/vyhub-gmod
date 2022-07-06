@@ -3,6 +3,21 @@ VyHub.Reward.executed_rewards_queue = VyHub.Reward.executed_rewards_queue or {}
 VyHub.Reward.executed_rewards = VyHub.Reward.executed_rewards or {}
 VyHub.rewards = VyHub.rewards or {}
 
+local pairs = pairs
+local player_GetHumans = player.GetHumans
+local IsValid = IsValid
+local table_Count = table.Count
+local table_insert = table.insert
+local player_GetBySteamID64 = player.GetBySteamID64
+local table_HasValue = table.HasValue
+local game_ConsoleCommand = game.ConsoleCommand
+local RunString = RunString
+local string_Replace = string.Replace
+local tostring = tostring
+local hook_Add = hook.Add
+local timer_Create = timer.Create
+local hook_Call = hook.Call
+
 local RewardEvent = {
     DIRECT = "DIRECT",
     CONNECT = "CONNECT",
@@ -22,7 +37,7 @@ local RewardType = {
 function VyHub.Reward:refresh(callback)
     local user_ids = ""
 
-    for _, ply in pairs(player.GetHumans()) do
+    for _, ply in pairs(player_GetHumans()) do
         if IsValid(ply) then
             local id = ply:VyHubID()
 
@@ -46,7 +61,7 @@ function VyHub.Reward:refresh(callback)
           for_server_id = VyHub.server.id, foreign_ids = "true"}, 
         function(code, result)
             VyHub.rewards = result
-            VyHub:msg(f("Found %i users with open rewards.", table.Count(result)), "debug")
+            VyHub:msg(f("Found %i users with open rewards.", table_Count(result)), "debug")
 
             if callback then
                 callback()
@@ -59,7 +74,7 @@ end
 
 function VyHub.Reward:set_executed(areward_id)
     VyHub.Reward.executed_rewards_queue[areward_id] = true
-    table.insert(VyHub.Reward.executed_rewards, areward_id)
+    table_insert(VyHub.Reward.executed_rewards, areward_id)
 
     VyHub.Reward:save_executed()
 end
@@ -102,11 +117,11 @@ function VyHub.Reward:exec_rewards(event, steamid)
     end
 
     if event == RewardEvent.DIRECT then
-        table.insert(allowed_events, RewardEvent.DISABLE)
+        table_insert(allowed_events, RewardEvent.DISABLE)
     end
 
     for steamid, arewards in pairs(rewards_by_player) do
-        local ply = player.GetBySteamID64(steamid)
+        local ply = player_GetBySteamID64(steamid)
 
         if not IsValid(ply) then
             VyHub:msg(f("Player %s not valid, skipping.", steamid), "debug")
@@ -117,11 +132,11 @@ function VyHub.Reward:exec_rewards(event, steamid)
             local se = true
             local reward = areward.reward
 
-            if not table.HasValue(allowed_events, reward.on_event) then
+            if not table_HasValue(allowed_events, reward.on_event) then
                 continue
             end
 
-            if table.HasValue(VyHub.Reward.executed_rewards, areward.id) then
+            if table_HasValue(VyHub.Reward.executed_rewards, areward.id) then
                 VyHub:msg(f("Skipped reward %s, because it already has been executed.", areward.id), "debug")
                 continue
             end
@@ -131,7 +146,7 @@ function VyHub.Reward:exec_rewards(event, steamid)
             if reward.type == RewardType.COMMAND then
                 if data.command != nil then
                     local cmd = VyHub.Reward:do_string_replacements(data.command, ply, areward)
-                    game.ConsoleCommand(cmd.. "\n")
+                    game_ConsoleCommand(cmd.. "\n")
                 end
             elseif reward.type == RewardType.SCRIPT then
                 local lua_str = data.script
@@ -167,41 +182,41 @@ function VyHub.Reward:do_string_replacements(inp_str, ply, areward)
     }
 
     for k, v in pairs(replacements) do
-        inp_str = string.Replace(tostring(inp_str), "%" .. tostring(k) .. "%", tostring(v))
+        inp_str = string_Replace(tostring(inp_str), "%" .. tostring(k) .. "%", tostring(v))
     end
 
     return inp_str
 end
 
-hook.Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
+hook_Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
     VyHub.Reward.executed_rewards_queue = VyHub.Cache:get("executed_rewards_queue") or {}
 
     VyHub.Reward:refresh(function ()
         VyHub.Reward:exec_rewards(RewardEvent.DIRECT)
     end)
 
-    timer.Create("vyhub_reward_refresh", 60, 0, function ()
+    timer_Create("vyhub_reward_refresh", 60, 0, function ()
         VyHub.Reward:refresh(function ()
             VyHub.Reward:exec_rewards(RewardEvent.DIRECT)
         end)
     end)
 
-    hook.Add("vyhub_ply_initialized", "vyhub_reward_vyhub_ply_initialized", function(ply)
+    hook_Add("vyhub_ply_initialized", "vyhub_reward_vyhub_ply_initialized", function(ply)
 		VyHub.Reward:exec_rewards(RewardEvent.CONNECT, ply:SteamID64())
-		hook.Call("vyhub_reward_post_connect", _, ply)
+		hook_Call("vyhub_reward_post_connect", _, ply)
 	end)
 
-	hook.Add("PlayerSpawn", "vyhub_reward_PlayerSpawn", function(ply) 
+	hook_Add("PlayerSpawn", "vyhub_reward_PlayerSpawn", function(ply) 
 		if ply:Alive() then
 			VyHub.Reward:exec_rewards(ply, RewardEvent.SPAWN, ply:SteamID64())
 		end
 	end)
 
-    hook.Add("PostPlayerDeath", "vyhub_reward_PostPlayerDeath", function(ply)
+    hook_Add("PostPlayerDeath", "vyhub_reward_PostPlayerDeath", function(ply)
         VyHub.Reward:exec_rewards(ply, RewardEvent.DEATH, ply:SteamID64())
 	end)
 
-    hook.Add("PlayerDisconnect", "vyhub_reward_PlayerDisconnect", function(ply)
+    hook_Add("PlayerDisconnect", "vyhub_reward_PlayerDisconnect", function(ply)
 		if IsValid(ply) then
 			VyHub.Reward:exec_rewards(ply, RewardEvent.Disconnect, ply:SteamID64())
 		end

@@ -2,6 +2,22 @@ VyHub.Ban = VyHub.Ban or {}
 VyHub.Ban.ban_queue = VyHub.Ban.ban_queue or {}
 VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
 
+local table = table
+local pairs = pairs
+local player = player
+local string = string
+local hook = hook
+local tonumber = tonumber
+local IsValid = IsValid
+local date = date
+local timer = timer
+local GetConVarNumber = GetConVarNumber
+local concommand = concommand
+local isstring = isstring
+local tostring = tostring
+local ipairs = ipairs
+local SendUserMessage = SendUserMessage
+
 --[[
     ban_queue: Dict[<user_steamid>,List[Dict[...]\]\]
         user_steamid: str
@@ -13,7 +29,6 @@ VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
 
     unban_queue: Dict[<user_steamid>, <processor_steamid>]
 ]]--
-
 
 local default_ban_msg = ">>> Ban Message <<<" .. "\n\n"
 .. VyHub.lang.other.reason .. ": %reason%" .. "\n" 
@@ -54,11 +69,11 @@ function VyHub.Ban:kick_banned_players()
 end
 
 function VyHub.Ban:refresh()
-    VyHub.API:get("/server/bundle/%s/ban", { VyHub.server.serverbundle_id }, { active = "true" }, function(code, result)
+    VyHub.API:get("/server/bundle/%s/ban", {VyHub.server.serverbundle_id}, {active = "true"}, function(code, result)
         VyHub.bans = result
 
         VyHub.Cache:save("bans", VyHub.bans)
-        
+
         VyHub:msg(string.format("Found %s users with active bans.", table.Count(VyHub.bans)), "debug")
 
         hook.Run("vyhub_bans_refreshed")
@@ -89,7 +104,6 @@ function VyHub.Ban:handle_queue()
     end
 
     local function failed_ban_abort(steamid)
-        
     end
 
     if not table.IsEmpty(VyHub.Ban.ban_queue) then
@@ -120,7 +134,7 @@ function VyHub.Ban:handle_queue()
                                         if morph_user_id != nil then
                                             url = url .. f('?morph_user_id=%s', morph_user_id)
                                         end
-                
+
                                         VyHub.API:post(url, nil, data, function(code, result)
                                             VyHub.Ban.ban_queue[steamid][i] = nil
                                             VyHub.Ban:save_queues()
@@ -140,7 +154,7 @@ function VyHub.Ban:handle_queue()
                                                 local error_msg = string.format("Could not create ban for %s, aborting: %s", steamid, json.encode(msg))
 
                                                 VyHub:msg(error_msg, "error")
-                                                
+
                                                 VyHub.Ban.ban_queue[steamid][i] = nil
                                                 VyHub.Ban:save_queues()
 
@@ -346,7 +360,6 @@ hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
     end)
 end)
 
-
 hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
     if ULib then
         ULib.kickban = function(ply, length, reason, admin)
@@ -505,7 +518,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 end)
             end
         end
-        xgui.addCmd( "updateBan", ulx_xgui_updateban )
+        xgui.addCmd("updateBan", ulx_xgui_updateban)
 
         function VyHub.Ban:replace_ulib_bans()
             hook.Remove("CheckPassword", "ULibBanCheck")
@@ -606,11 +619,11 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
         concommand.Add("serverguard_addmban", function(ply, _, args)
             if (serverguard.player:HasPermission(ply, "Ban")) then
-                local steamid32 	= string.Trim(args[1]) 
-                local steamid64 	= util.SteamIDTo64(steamid32)
-                local length 		= tonumber(args[2]);
-                local reason 		= table.concat(args, " ", 4) or ""
-                local steamid64_admin 	= ply:SteamID64()
+                local steamid32 = string.Trim(args[1]) 
+                local steamid64 = util.SteamIDTo64(steamid32)
+                local length = tonumber(args[2]);
+                local reason = table.concat(args, " ", 4) or ""
+                local steamid64_admin = ply:SteamID64()
 
                 VyHub.Ban:create(steamid64, length, reason, steamid64_admin)
             end
@@ -628,7 +641,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             else
                 if (serverguard.player:HasPermission(ply, "Unban")) then
                     local steamID = args[1]
-                    
+
                     if (serverguard.banTable[steamID]) then
                         serverguard.Notify(nil, SERVERGUARD.NOTIFY.GREEN, serverguard.player:GetName(ply), SERVERGUARD.NOTIFY.WHITE, " has unbanned ", SERVERGUARD.NOTIFY.RED, serverguard.banTable[steamID].player, SERVERGUARD.NOTIFY.WHITE, ".")
                     end
@@ -640,10 +653,10 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
         local command = {}
 
-        command.help				= "Unban a player."
-        command.command 			= "unban"
-        command.arguments 			= {"steamid"}
-        command.permissions 		= {"Unban"}
+        command.help = "Unban a player."
+        command.command = "unban"
+        command.arguments = {"steamid"}
+        command.permissions = {"Unban"}
 
         function command:Execute(player, silent, arguments)
             local steamID = arguments[1]
@@ -661,9 +674,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
     end
 
     if xAdmin and not xAdmin.Admin.RegisterBan then
-        -- xAdmin 1
-
-        function xAdmin.RegisterNewBan(ply, admin, reason, length)
+        function xAdmin.RegisterNewBan(ply, admin, reason, length) -- xAdmin 1
             local steamid64 = nil
             if isstring(ply) then steamid64 = util.SteamIDTo64(ply) elseif IsValid(ply) then steamid64 = ply:SteamID64() end
 
@@ -684,8 +695,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             VyHub.Ban.xadmin_removeban(steamid64)
         end
     elseif xAdmin and xAdmin.Admin.RegisterBan then	
-        -- xAdmin 2
-        function xAdmin.Admin.RegisterBan(ply, admin, reason, length)
+        function xAdmin.Admin.RegisterBan(ply, admin, reason, length) -- xAdmin 2
             local steamid64 = nil
             if isstring(ply) then steamid64 = util.SteamIDTo64(ply) elseif IsValid(ply) then steamid64 = ply:SteamID64() end
 
@@ -700,7 +710,6 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
         function xAdmin.Admin.RemoveBan(steamid64)
             VyHub.Ban:unban(steamid64)
-
             VyHub.Ban.xadmin_removeban(steamid64)
         end
 
@@ -737,7 +746,6 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                 end
             end
 
-        
             function xAdmin.Admin.ModifyBan(admin, ply, reason, length)
                 if not VyHub.Util:is_server(admin) then
                     VyHub.Util:print_chat(ply, "Operation not supported.")

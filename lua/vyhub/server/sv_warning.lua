@@ -1,5 +1,11 @@
 VyHub.Warning = VyHub.Warning or {}
 
+local hook_Add = hook.Add
+local concommand_Add = concommand.Add
+local IsValid = IsValid
+local string_Explode = string.Explode
+local string_Replace = string.Replace
+
 function VyHub.Warning:create(steamid, reason, processor_steamid)
     processor_steamid = processor_steamid or nil
 
@@ -37,9 +43,8 @@ function VyHub.Warning:create(steamid, reason, processor_steamid)
     end)
 end
 
-
-hook.Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()   
-    concommand.Add("vh_warn", function(ply, _, args)
+hook_Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()   
+    concommand_Add("vh_warn", function(ply, _, args)
         if not args[1] or not args[2] then return end
 
         if VyHub.Util:is_server(ply) then
@@ -53,15 +58,14 @@ hook.Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()
 		if not args[1] or not args[2] then return end
 
 		local reason = VyHub.Util:concat_args(args, 2)
-
 		local target = VyHub.Util:get_player_by_nick(args[1])
 
 		if target and IsValid(target) then
-			local nickparts = string.Explode(' ', target:Nick())
+			local nickparts = string_Explode(" ", target:Nick())
 
 			if #nickparts > 1 then
-				nickparts = VyHub.Util:concat_args(nickparts, 2) .. ' '
-				reason = string.Replace(reason, nickparts, '')
+				nickparts = VyHub.Util:concat_args(nickparts, 2) .. " "
+				reason = string_Replace(reason, nickparts, "")
 			end
 
 			VyHub.Warning:create(target:SteamID64(), reason, ply:SteamID64())
