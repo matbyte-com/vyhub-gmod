@@ -110,7 +110,7 @@ function VyHub.Statistic:get_or_create_attr_definition(callback)
 end
 
 
-hook.Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
+hook.Add("vyhub_ready", "vyhub_statistic_vyhub_ready", function ()
     VyHub.Statistic.playtime = VyHub.Cache:get("playtime") or {}
 
     VyHub.Statistic:send_playtime()

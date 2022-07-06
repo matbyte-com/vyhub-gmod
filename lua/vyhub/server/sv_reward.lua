@@ -19,10 +19,11 @@ local RewardType = {
     MEMBERSHIP = "MEMBERSHIP",
 }
 
-function VyHub.Reward:refresh(callback)
+function VyHub.Reward:refresh(callback, limit_players)
     local user_ids = ""
+    players = limit_players or player.GetHumans()
 
-    for _, ply in pairs(player.GetHumans()) do
+    for _, ply in pairs(players) do
         if IsValid(ply) then
             local id = ply:VyHubID()
 
@@ -45,8 +46,14 @@ function VyHub.Reward:refresh(callback)
         { active = "true", serverbundle_id = VyHub.server.serverbundle.id, status = "OPEN",
           for_server_id = VyHub.server.id, foreign_ids = "true"}, 
         function(code, result)
-            VyHub.rewards = result
-            VyHub:msg(f("Found %i users with open rewards.", table.Count(result)), "debug")
+            if limit_players == nil then
+                VyHub.rewards = result
+                VyHub:msg(f("Found %i users with open rewards.", table.Count(result)), "debug")
+            else
+                for steamid, arewards in pairs(result) do
+                    VyHub.rewards[steamid] = arewards
+                end
+            end
 
             if callback then
                 callback()
@@ -187,23 +194,26 @@ hook.Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
     end)
 
     hook.Add("vyhub_ply_initialized", "vyhub_reward_vyhub_ply_initialized", function(ply)
-		VyHub.Reward:exec_rewards(RewardEvent.CONNECT, ply:SteamID64())
-		hook.Call("vyhub_reward_post_connect", _, ply)
+        VyHub.Reward:refresh(function()
+            VyHub.Reward:exec_rewards(RewardEvent.CONNECT, tostring(ply:SteamID64()))
+		    hook.Call("vyhub_reward_post_connect", _, ply)
+        end, { ply })
 	end)
 
 	hook.Add("PlayerSpawn", "vyhub_reward_PlayerSpawn", function(ply) 
 		if ply:Alive() then
-			VyHub.Reward:exec_rewards(ply, RewardEvent.SPAWN, ply:SteamID64())
+			VyHub.Reward:exec_rewards(RewardEvent.SPAWN, tostring(ply:SteamID64()))
 		end
 	end)
 
     hook.Add("PostPlayerDeath", "vyhub_reward_PostPlayerDeath", function(ply)
-        VyHub.Reward:exec_rewards(ply, RewardEvent.DEATH, ply:SteamID64())
+        VyHub.Reward:exec_rewards(RewardEvent.DEATH, tostring(ply:SteamID64()))
 	end)
 
+    -- Does not work
     hook.Add("PlayerDisconnect", "vyhub_reward_PlayerDisconnect", function(ply)
 		if IsValid(ply) then
-			VyHub.Reward:exec_rewards(ply, RewardEvent.Disconnect, ply:SteamID64())
+			VyHub.Reward:exec_rewards(RewardEvent.Disconnect, tostring(ply:SteamID64()))
 		end
 	end)
 end)
