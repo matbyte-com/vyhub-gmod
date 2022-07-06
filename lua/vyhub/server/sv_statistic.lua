@@ -2,6 +2,17 @@ VyHub.Statistic = VyHub.Statistic or {}
 VyHub.Statistic.playtime = VyHub.Statistic.playtime or {}
 VyHub.Statistic.attr_def = VyHub.Statistic.attr_def or nil
 
+local pairs = pairs
+local player_GetHumans = player.GetHumans
+local string_len = string.len
+local table_GetKeys = table.GetKeys
+local timer_Create = timer.Create
+local table_Count = table.Count
+local table_remove = table.remove
+local math_Round = math.Round
+local tostring = tostring
+local hook_Add = hook.Add
+
 function VyHub.Statistic:save_playtime()
     VyHub:msg(f("Saved playtime statistics: %s", json.encode(VyHub.Statistic.playtime)), "debug")
 
@@ -9,10 +20,10 @@ function VyHub.Statistic:save_playtime()
 end
 
 function VyHub.Statistic:add_one_minute()
-    for _, ply in pairs(player.GetHumans()) do
+    for _, ply in pairs(player_GetHumans()) do
         local steamid = ply:SteamID64()
         ply:VyHubID(function (user_id)
-            if user_id == nil or string.len(user_id) < 10 then
+            if user_id == nil or string_len(user_id) < 10 then
                 VyHub:msg(f("Could not add playtime for user %s", steamid))
                 return
             end
@@ -32,21 +43,21 @@ function VyHub.Statistic:send_playtime()
             return
         end
 
-        user_ids = table.GetKeys(VyHub.Statistic.playtime)
+        user_ids = table_GetKeys(VyHub.Statistic.playtime)
             
-        timer.Create("vyhub_send_stats", 0.3, table.Count(user_ids), function ()
-            i =  table.Count(user_ids)
+        timer_Create("vyhub_send_stats", 0.3, table_Count(user_ids), function ()
+            i =  table_Count(user_ids)
             user_id = user_ids[i]
 
             if user_id != nil then
                 seconds = VyHub.Statistic.playtime[user_id]
-                table.remove(user_ids, i)
+                table_remove(user_ids, i)
 
                 if seconds != nil and seconds > 0 then
-                    local hours = math.Round(seconds / 60 / 60, 2)
+                    local hours = math_Round(seconds / 60 / 60, 2)
 
                     if hours > 0 then
-                        if string.len(user_id) < 10 then
+                        if string_len(user_id) < 10 then
                             VyHub.Statistic.playtime[user_id] = nil
                             return
                         end
@@ -109,17 +120,16 @@ function VyHub.Statistic:get_or_create_attr_definition(callback)
     end)
 end
 
-
-hook.Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
+hook_Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
     VyHub.Statistic.playtime = VyHub.Cache:get("playtime") or {}
 
     VyHub.Statistic:send_playtime()
 
-    timer.Create("vyhub_statistic_playtime_tick", 60, 0, function ()
+    timer_Create("vyhub_statistic_playtime_tick", 60, 0, function ()
         VyHub.Statistic:add_one_minute()
     end)
 
-    timer.Create("vyhub_statistic_send_playtime", 3600, 0, function ()
+    timer_Create("vyhub_statistic_send_playtime", 3600, 0, function ()
         VyHub.Statistic:send_playtime()
     end)
 end)

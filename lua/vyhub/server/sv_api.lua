@@ -1,11 +1,20 @@
 VyHub.API = VyHub.API or {}
 
-local content_type = "application/json; charset=utf-8"
+local string_format = string.format
+local unpack = unpack
+local istable = istable
+local HTTP = HTTP
+local hook_Add = hook.Add
+local string_EndsWith = string.EndsWith
+local string_sub = string.sub
+local hook_Run = hook.Run
+local concommand_Add = concommand.Add
 
+local content_type = "application/json; charset=utf-8"
 
 function VyHub.API:request(method, url, path_params, query, headers, request_body, type, success, failed)
     if path_params != nil then
-        url = string.format(url, unpack(path_params))
+        url = string_format(url, unpack(path_params))
     end
 
     if istable(request_body) then
@@ -15,12 +24,12 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
     success_func = function(code, body, headers)
         local result = body
 
-        if headers["Content-Type"] and headers["Content-Type"] == 'application/json' then
+        if headers["Content-Type"] and headers["Content-Type"] == "application/json" then
             result = json.decode(body)
         end
 
         if code >= 200 and code < 300 then
-            VyHub:msg(string.format("HTTP %s %s (%s): %s", method, url, json.encode(query), code), "debug")
+            VyHub:msg(string_format("HTTP %s %s (%s): %s", method, url, json.encode(query), code), "debug")
 
             if success != nil then
                 // VyHub:msg(string.format("Response: %s", body), "debug")
@@ -28,7 +37,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
                 success(code, result, headers)
             end
         else
-            VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
+            VyHub:msg(string_format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
 
             if failed != nil then
                 local err_text = json.encode(result)
@@ -43,7 +52,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
     end
 
     failed_func = function(reason)
-        VyHub:msg(string.format("HTTP %s request to %s failed with reason '%s'.\nQuery: %s\nBody: %s", method, url, reason, json.encode(query), request_body), "error")
+        VyHub:msg(string_format("HTTP %s request to %s failed with reason '%s'.\nQuery: %s\nBody: %s", method, url, reason, json.encode(query), request_body), "error")
 
         if failed != nil then
             failed(0, reason, {})
@@ -63,58 +72,58 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
 end
 
 function VyHub.API:get(endpoint, path_params, query, success, failed)
-    url = string.format("%s%s", VyHub.API.url, endpoint)
+    url = string_format("%s%s", VyHub.API.url, endpoint)
 
     VyHub.API:request("GET", url, path_params, query, self.headers, nil, content_type, success, failed)
 end
 
 function VyHub.API:delete(endpoint, path_params, success, failed)
-    url = string.format("%s%s", VyHub.API.url, endpoint)
+    url = string_format("%s%s", VyHub.API.url, endpoint)
 
     self:request("DELETE", url, path_params, nil, self.headers, nil, content_type, success, failed)
 end
 
 function VyHub.API:post(endpoint, path_params, body, success, failed, query)
-    url = string.format("%s%s", VyHub.API.url, endpoint)
+    url = string_format("%s%s", VyHub.API.url, endpoint)
 
     self:request("POST", url, path_params, query, self.headers, body, content_type, success, failed)
 end
 
 function VyHub.API:patch(endpoint, path_params, body, success, failed)
-    url = string.format("%s%s", VyHub.API.url, endpoint)
+    url = string_format("%s%s", VyHub.API.url, endpoint)
 
     self:request("PATCH", url, path_params, nil, self.headers, body, content_type, success, failed)
 end
 
 function VyHub.API:put(endpoint, path_params, body, success, failed)
-    url = string.format("%s%s", VyHub.API.url, endpoint)
+    url = string_format("%s%s", VyHub.API.url, endpoint)
 
     self:request("PUT", url, path_params, nil, self.headers, body, content_type, success, failed)
 end
 
-hook.Add("vyhub_loading_finish", "vyhub_api_vyhub_loading_finish", function()
+hook_Add("vyhub_loading_finish", "vyhub_api_vyhub_loading_finish", function()
     VyHub.API.url = VyHub.Config.api_url
     VyHub.API.headers = {
-        Authorization = string.format("Bearer %s", VyHub.Config.api_key)
+        Authorization = string_format("Bearer %s", VyHub.Config.api_key)
     }
 
-    if string.EndsWith(VyHub.API.url, "/") then
-        VyHub.API.url = string.sub(VyHub.API.url, 1, -2)
+    if string_EndsWith(VyHub.API.url, "/") then
+        VyHub.API.url = string_sub(VyHub.API.url, 1, -2)
     end
 
-    VyHub:msg(string.format("API URL is %s", VyHub.API.url))
+    VyHub:msg(string_format("API URL is %s", VyHub.API.url))
 
     VyHub.API:get("/openapi.json", nil, nil, function(code, result, headers)
-        VyHub:msg(string.format("Connection to API %s version %s successful!", result.info.title, result.info.version), "success")
+        VyHub:msg(string_format("Connection to API %s version %s successful!", result.info.title, result.info.version), "success")
 
-        hook.Run("vyhub_api_ready")
+        hook_Run("vyhub_api_ready")
     end, function()
         VyHub:msg("Connection to API failed! Trying to use cache.", "error")
 
-        hook.Run("vyhub_api_failed")
+        hook_Run("vyhub_api_failed")
     end)
 end)
 
-concommand.Add("vyhub_reinit", function ()
-    hook.Run("vyhub_loading_finish")
+concommand_Add("vyhub_reinit", function ()
+    hook_Run("vyhub_loading_finish")
 end)

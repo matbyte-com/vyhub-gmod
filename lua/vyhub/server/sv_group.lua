@@ -1,17 +1,39 @@
-
 VyHub.Group = VyHub.Group or {}
 
 VyHub.groups = VyHub.groups or nil
 VyHub.groups_mapped = VyHub.groups_mapped or nil
 
-util.AddNetworkString("vyhub_group_data")
+local util_AddNetworkString = util.AddNetworkString
+local string_format = string.format
+local pairs = pairs
+local net_Start = net.Start
+local net_WriteTable = net.WriteTable
+local net_Broadcast = net.Broadcast
+local timer_Simple = timer.Simple
+local os_time = os.time
+local player_GetBySteamID64 = player.GetBySteamID64
+local IsValid = IsValid
+local hook_Add = hook.Add
+local FindMetaTable = FindMetaTable
+local timer_Create = timer.Create
+local net_Send = net.Send
+local concommand_Add = concommand.Add
+local bit_bor = bit.bor
+local isstring = isstring
+local util_SteamIDTo64 = util.SteamIDTo64
+local string_find = string.find
+local player_GetByUniqueID = player.GetByUniqueID
+local string_match = string.match
+local math_Round = math.Round
+
+util_AddNetworkString("vyhub_group_data")
 
 function VyHub.Group:refresh()
     VyHub.API:get("/group/", nil, nil, function(code, result)
         if result != VyHub.groups then
             VyHub.groups = result
         
-            VyHub:msg(string.format("Found groups: %s", json.encode(result)), "debug")
+            VyHub:msg(string_format("Found groups: %s", json.encode(result)), "debug")
 
             VyHub.groups_mapped = {}
 
@@ -24,13 +46,13 @@ function VyHub.Group:refresh()
                 end
             end
 
-            net.Start("vyhub_group_data")
-                net.WriteTable(VyHub.groups_mapped)
-            net.Broadcast()
+            net_Start("vyhub_group_data")
+                net_WriteTable(VyHub.groups_mapped)
+            net_Broadcast()
         end
     end, function (code, reason)
         VyHub:msg("Could not refresh groups. Retrying in a minute.", "error")
-        timer.Simple(60, function ()
+        timer_Simple(60, function ()
             VyHub.Group:refresh()
         end)
     end)
@@ -70,7 +92,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
         local end_date = nil 
 
         if seconds != nil then
-            end_date = VyHub.Util:format_datetime(os.time() + seconds)
+            end_date = VyHub.Util:format_datetime(os_time() + seconds)
         end
 
         local url = '/user/%s/membership'
@@ -87,7 +109,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
         }, function (code, result)
             VyHub:msg(f("Added %s to group %s.", steamid, groupname), "success")
 
-            local ply = player.GetBySteamID64(steamid)
+            local ply = player_GetBySteamID64(steamid)
 
             if IsValid(ply) then
                 VyHub.Player:refresh(ply)
@@ -123,7 +145,7 @@ function VyHub.Group:remove(steamid, processor_id, callback)
         VyHub.API:delete(url, {user.id}, function (code, result)
             VyHub:msg(f("Removed %s from all groups.", steamid), "success")
 
-            local ply = player.GetBySteamID64(steamid)
+            local ply = player_GetBySteamID64(steamid)
 
             if IsValid(ply) then
                 VyHub.Player:refresh(ply)
@@ -142,22 +164,22 @@ function VyHub.Group:remove(steamid, processor_id, callback)
     end)
 end
 
-hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
+hook_Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
     local meta_ply = FindMetaTable("Player")
 
     VyHub.Group:refresh()
 
-    timer.Create("vyhub_group_refresh", VyHub.Config.group_refresh_time, 0, function ()
+    timer_Create("vyhub_group_refresh", VyHub.Config.group_refresh_time, 0, function ()
         VyHub.Group:refresh()
     end)
 
-    hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
-		net.Start("vyhub_group_data")
-			net.WriteTable(VyHub.groups_mapped)
-		net.Send(ply)
+    hook_Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
+		net_Start("vyhub_group_data")
+			net_WriteTable(VyHub.groups_mapped)
+		net_Send(ply)
 	end)
 
-	concommand.Add("vyhub_setgroup", function(ply, _, args)
+	concommand_Add("vyhub_setgroup", function(ply, _, args)
 		if VyHub.Util:is_server(ply) then
 			local steamid = args[1]
 			local group = args[2]
@@ -167,7 +189,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 				VyHub.Group:set(steamid, group)
 			end
 		end
-	end, _, bit.bor(FCVAR_SERVER_CAN_EXECUTE, FCVAR_PROTECTED))
+	end, _, bit_bor(FCVAR_SERVER_CAN_EXECUTE, FCVAR_PROTECTED))
 
 	local _setusergroup = meta_ply.SetUserGroup
 
@@ -188,16 +210,16 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 
         xAdmin.SetGroup = function(ply, group, ignore_vh)
             local steamid32 = isstring(ply) and ply or ply:SteamID()
-            local steamid64 = util.SteamIDTo64(steamid32)
+            local steamid64 = util_SteamIDTo64(steamid32)
 
 			if not ignore_vh then
 				VyHub.Group:set(steamid64, group, nil, nil, function(success)
                     if success then
-                        xadmin_setgroup( ply, group )
+                        xadmin_setgroup(ply, group)
                     end
                 end)
             else
-                xadmin_setgroup( ply, group )
+                xadmin_setgroup(ply, group)
 			end
 		end
     end
@@ -208,24 +230,24 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 
 		ULib.ucl.addUser = function(steamid32, allow, deny, groupname, ignore_vh)
 			if not ignore_vh then
-                local steamid64 = util.SteamIDTo64(steamid32)
+                local steamid64 = util_SteamIDTo64(steamid32)
 				VyHub.Group:set(steamid64, groupname, nil, nil, function(success)
                     if success then
-                        ulx_adduser( steamid32, allow, deny, groupname )
+                        ulx_adduser(steamid32, allow, deny, groupname)
                     end
                 end)
             else
-                ulx_adduser( steamid32, allow, deny, groupname )
+                ulx_adduser(steamid32, allow, deny, groupname)
 			end
 		end
 
 		ULib.ucl.removeUser = function(id)
 			local steamid64 = nil
 
-			if string.find(id, ":") then
-				steamid64 = util.SteamIDTo64(id)
+			if string_find(id, ":") then
+				steamid64 = util_SteamIDTo64(id)
 			else
-				local ply = player.GetByUniqueID(id)
+				local ply = player_GetByUniqueID(id)
 
 				if IsValid(ply) then
 					steamid64 = ply:SteamID64()
@@ -235,13 +257,13 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 			if steamid64 then
                 VyHub.Group:remove(steamid64, nil, function (success)
                     if success then
-                        ulx_removeuser( id )
+                        ulx_removeuser(id)
                     end
                 end)
 			end
 		end
 	end
-	
+
 	if serverguard then
 		local servergaurd_setrank = serverguard.player["SetRank"]
 
@@ -254,8 +276,8 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
                                 servergaurd_setrank(self, target, rank, length)
                             end
                         end)
-					elseif type(target) == "string" and string.match(target, "STEAM_%d:%d:%d+") then
-						local steamid = util.SteamIDTo64(target)
+					elseif type(target) == "string" and string_match(target, "STEAM_%d:%d:%d+") then
+						local steamid = util_SteamIDTo64(target)
 
                         VyHub.Group:set(steamid, rank, nil, nil, function(success)
                             if success then
@@ -282,7 +304,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
                 seconds = nil
 
                 if length != nil then
-                    seconds = math.Round(length * 60, 0)
+                    seconds = math_Round(length * 60, 0)
                 end
 
                 VyHub.Group:set(ply:SteamID64(), rank, seconds, nil, function(success)

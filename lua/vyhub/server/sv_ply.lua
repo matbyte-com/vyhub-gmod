@@ -3,37 +3,46 @@ VyHub.Player = VyHub.Player or {}
 VyHub.Player.connect_queue = VyHub.Player.connect_queue or {}
 VyHub.Player.table = VyHub.Player.table or {}
 
+local FindMetaTable = FindMetaTable
 local meta_ply = FindMetaTable("Player")
+local IsValid = IsValid
+local string_format = string.format
+local hook_Run = hook.Run
+local timer_Create = timer.Create
+local timer_Remove = timer.Remove
+local timer_Simple = timer.Simple
+local pairs = pairs
+local hook_Add = hook.Add
 
 function VyHub.Player:initialize(ply, retry)
     if not IsValid(ply) then return end
 
-    VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), ply:SteamID64()))
+    VyHub:msg(string_format("Initializing user %s, %s", ply:Nick(), ply:SteamID64()))
 
     VyHub.API:get("/user/%s", {ply:SteamID64()}, {type = "STEAM"}, function(code, result)
-        VyHub:msg(string.format("Found existing user %s for steam id %s (%s).", result.id, ply:SteamID64(), ply:Nick()), "success")
+        VyHub:msg(string_format("Found existing user %s for steam id %s (%s).", result.id, ply:SteamID64(), ply:Nick()), "success")
 
         VyHub.Player.table[ply:SteamID64()] = result
         ply:SetNWString("vyhub_id", result.id)
 
         VyHub.Player:refresh(ply)
 
-        hook.Run("vyhub_ply_initialized", ply)
+        hook_Run("vyhub_ply_initialized", ply)
 
         local ply_timer_name = "vyhub_player_" .. ply:SteamID64()
 
-        timer.Create(ply_timer_name, VyHub.Config.player_refresh_time, 0, function()
+        timer_Create(ply_timer_name, VyHub.Config.player_refresh_time, 0, function()
             if IsValid(ply) then
                 VyHub.Player:refresh(ply)
             else
-                timer.Remove(ply_timer_name)
+                timer_Remove(ply_timer_name)
             end
         end)
     end, function(code, reason)
         if code != 404 then
-            VyHub:msg(string.format("Could not check if users %s exists. Retrying in a minute..", ply:SteamID64()), "error")
+            VyHub:msg(string_format("Could not check if users %s exists. Retrying in a minute..", ply:SteamID64()), "error")
 
-            timer.Simple(60, function ()
+            timer_Simple(60, function ()
                 VyHub.Player:initialize(ply)
             end)
 
@@ -41,16 +50,16 @@ function VyHub.Player:initialize(ply, retry)
         end
 
         if retry then
-            VyHub:msg(string.format("Could not create user %s. Retrying in a minute..", ply:SteamID64()), "error")
+            VyHub:msg(string_format("Could not create user %s. Retrying in a minute..", ply:SteamID64()), "error")
 
-            timer.Simple(60, function()
+            timer_Simple(60, function()
                 VyHub.Player:initialize(ply)
             end)
 
             return
         end
 
-        VyHub:msg(string.format("No existing user found for steam id %s. Creating..", ply:SteamID64()))
+        VyHub:msg(string_format("No existing user found for steam id %s. Creating..", ply:SteamID64()))
 
         VyHub.API:post('/user/', nil, { identifier = ply:SteamID64(), type = 'STEAM' }, function()
             VyHub.Player:initialize(ply, true)
@@ -75,13 +84,13 @@ function VyHub.Player:get(steamid, callback)
         callback(VyHub.Player.table[steamid])
     else
         VyHub.API:get("/user/%s", {steamid}, {type = "STEAM"}, function(code, result)
-            VyHub:msg(string.format("Received user %s for steam id %s.", result.id, steamid), "debug")
-    
+            VyHub:msg(string_format("Received user %s for steam id %s.", result.id, steamid), "debug")
+
             VyHub.Player.table[steamid] = result
 
             callback(result)
         end, function(code)
-            VyHub:msg(string.format("Could not receive user %s.", steamid), "error")
+            VyHub:msg(string_format("Could not receive user %s.", steamid), "error")
 
             if code == 404 then
                 callback(false)
@@ -108,7 +117,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if highest == nil then
-            VyHub:msg(string.format("Could not find any active group for %s", ply:SteamID64()), "error")
+            VyHub:msg(string_format("Could not find any active group for %s", ply:SteamID64()), "error")
             return
         end
 
@@ -122,7 +131,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if group == nil then
-            VyHub:msg(string.format("Could not find group name mapping for group %s.", highest.name), "error")
+            VyHub:msg(string_format("Could not find group name mapping for group %s.", highest.name), "error")
             return
         end
 
@@ -140,12 +149,12 @@ function VyHub.Player:check_group(ply, callback)
             else
                 ply:SetUserGroup(group, true)
             end
-            
+
             VyHub:msg("Added " .. ply:Nick() .. " to group " .. group, "success")
             VyHub.Util:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
         end
     end, function()
-        
+
     end)
 end
 
@@ -176,30 +185,30 @@ function meta_ply:VyHubID(callback)
                 callback(id)
             end
         end
-        
+
         return id
     end
 end
 
-hook.Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)
+hook_Add("vyhub_ply_connected", "vyhub_ply_vyhub_ply_connected", function(ply)
     VyHub.Player:initialize(ply)
 end)
 
-hook.Add("PlayerInitialSpawn","vyhub_ply_PlayerInitialSpawn", function(ply)
+hook_Add("PlayerInitialSpawn","vyhub_ply_PlayerInitialSpawn", function(ply)
     if IsValid(ply) and not ply:IsBot() then
         if VyHub.ready then
-            hook.Run("vyhub_ply_connected", ply)
+            hook_Run("vyhub_ply_connected", ply)
         else
             VyHub.Player.connect_queue[#VyHub.Player.connect_queue+1] = ply
         end
     end
 end)
 
-hook.Add("vyhub_ready", "vyhub_ply_vyhub_ready", function ()
-    timer.Simple(5, function()
+hook_Add("vyhub_ready", "vyhub_ply_vyhub_ready", function ()
+    timer_Simple(5, function()
         for _, ply in pairs(VyHub.Player.connect_queue) do
             if IsValid(ply) then
-                hook.Run("vyhub_ply_connected", ply)
+                hook_Run("vyhub_ply_connected", ply)
             end
         end
 
