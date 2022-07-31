@@ -78,32 +78,26 @@ function VyHub.Util:concat_args(args, pos)
 end
 
 
-hook.Add("PlayerSay", "vyhub_util_PlayerSay", function(ply, message)
-	if not VyHub.ready then
-		VyHub.Util:print_chat(ply, "<red>VyHub is not ready yet.</red>")
-		return
-	end
-
-	local chat_string = string.Explode(" ", message)
-	local found = false
-	local ret = nil
-
-	for k, v in pairs( VyHub.Util.chat_commands ) do
-		if not found then
-			if( string.lower(chat_string[1]) == string.lower(k) ) then
-				table.remove(chat_string, 1)
-				ret = v(ply, chat_string)
-				found = true
+if SERVER then
+	hook.Add("PlayerSay", "vyhub_util_PlayerSay", function(ply, message)
+		if VyHub.ready then
+			local chat_string = string.Explode(" ", message)
+			local ret = nil
+		
+			for k, v in pairs( VyHub.Util.chat_commands ) do
+				if( string.lower(chat_string[1]) == string.lower(k) ) then
+					table.remove(chat_string, 1)
+					ret = v(ply, chat_string)
+					break
+				end
 			end
-		end
-	end
-
-	if ret != nil then
-		return ret
-	end
-end)
-
-
+		
+			if ret != nil then
+				return ret
+			end
+		end	
+	end)
+end
 
 function VyHub.Util:replace_colors(message)
 	message = string.Replace(message, '"', '')
