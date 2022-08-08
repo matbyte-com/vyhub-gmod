@@ -126,7 +126,8 @@ function VyHub.Ban:handle_queue()
                                             VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()
 
-                                            local msg = f("Successfully added ban for user %s.", steamid)
+                                            local length = f("%s %s", math.Round(data.length/60), VyHub.lang.other.minutes)
+                                            local msg = f(VyHub.lang.ban.created, user.username, data.reason)
 
                                             VyHub:msg(msg, "success")
 
@@ -375,9 +376,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             if not steamid64 then return end
 
             if IsValid(admin) then
-                VyHub.Ban:create(ply:SteamID64(), length, reason, admin:SteamID64())
+                VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
             else
-                VyHub.Ban:create(ply:SteamID64(), length, reason)
+                VyHub.Ban:create(steamid64, length, reason)
             end
         end
 
@@ -394,14 +395,16 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             local steamid64_admin = nil
 
             if steamid32_admin then
-                if isentity(steamid32_admin) and steamid32_admin:IsPlayer() and IsValid(steamid32_admin) then
+                if VyHub.Util.is_server(steamid32_admin) then
+                    steamid64_admin = nil
+                elseif isentity(steamid32_admin) and steamid32_admin:IsPlayer() and IsValid(steamid32_admin) then
                     steamid64_admin = steamid32_admin:SteamID64()
-                elseif string.find(steamid32_admin, "STEAM_(%d+):(%d+):(%d+)") then
+                elseif isstring(steamid32_admin) and string.find(steamid32_admin, "STEAM_(%d+):(%d+):(%d+)") then
                     steamid64_admin = util.SteamIDTo64(steamid32_admin)
                 end
             end
 
-            if steamid64 and steamid64_admin then
+            if steamid64 then
                 if steamid64_admin == nil then
                     VyHub.Ban:unban(steamid64, steamid64_admin)
                 else
@@ -730,7 +733,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                     end
                 end
 
-                for _, ply in ipairs(player.GetAll()) do
+                for _, ply in ipairs(player.GetHumans()) do
                     if ply:xAdminHasPermission("ban") then
                         xAdmin.Admin.UpdateAllBans(ply)
                     end

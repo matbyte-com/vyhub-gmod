@@ -50,23 +50,35 @@ function VyHub.Player:initialize(ply, retry)
             return
         end
 
-        VyHub:msg(string.format("No existing user found for steam id %s. Creating..", ply:SteamID64()))
-
-        VyHub.API:post('/user/', nil, { identifier = ply:SteamID64(), type = 'STEAM' }, function()
+        VyHub.Player:create(steamid, function()
             VyHub.Player:initialize(ply, true)
-        end, function()
+        end, function ()
             VyHub.Player:initialize(ply, true)
         end)
     end)
 end
 
-function VyHub.Player:get(steamid, callback)
+function VyHub.Player:create(steamid, success, err)
+    VyHub:msg(string.format("No existing user found for steam id %s. Creating..", steamid))
+
+    VyHub.API:post('/user/', nil, { identifier = steamid, type = 'STEAM' }, function()
+        if success then
+            success()
+        end
+    end, function()
+        if err then
+            err()
+        end
+    end)
+end
+
+function VyHub.Player:get(steamid, callback, retry)
     if steamid == nil then
         callback(nil)
         return
     end
 
-    if steamid == false  then
+    if steamid == false then
         callback(false)
         return
     end
@@ -83,8 +95,12 @@ function VyHub.Player:get(steamid, callback)
         end, function(code)
             VyHub:msg(string.format("Could not receive user %s.", steamid), "error")
 
-            if code == 404 then
-                callback(false)
+            if code == 404 and retry == nil then
+                VyHub.Player:create(steamid, function ()
+                    VyHub.Player:get(steamid, callback, true)
+                end, function ()
+                    callback(false)
+                end)
             else
                 callback(nil)
             end
@@ -153,14 +169,28 @@ function VyHub.Player:refresh(ply, callback)
     VyHub.Player:check_group(ply)
 end
 
+function VyHub.Player:get_group(ply)
+    if not IsValid(ply) then
+        return nil
+    end
+
+    local group = VyHub.groups_mapped[ply:GetUserGroup()]
+
+    if group == nil then
+        return nil
+    end
+
+    return group
+end
+
 function meta_ply:VyHubID(callback)
     if IsValid(self) then
         local id = self:GetNWString("vyhub_id", nil)
 
-        if id == nil then
+        if id == nil or id == "" then
             VyHub.Player:get(self:SteamID64(), function(user)
                 if user != nil then
-                    ply:SetNWString("vyhub_id", user.id)
+                    self:SetNWString("vyhub_id", user.id)
 
                     if callback then
                         callback(user.id)
