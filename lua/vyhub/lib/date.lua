@@ -8,6 +8,8 @@
 
 -- https://github.com/Tieske/date
 
+-- Changes by Matbyte: New function setbias
+
 --[[ CONSTANTS ]]--
 local HOURPERDAY  = 24
 local MINPERHOUR  = 60
@@ -649,11 +651,17 @@ function dobj:__tostring() return self:fmt() end
 
 function dobj:copy() return date_new(self.daynum, self.dayfrc) end
 
+
+function dobj:setbias(bias)
+  self.bias = bias
+  return self
+end
+
 --[[ THE LOCAL DATE OBJECT METHODS ]]--
 function dobj:tolocal()
   local dn,df = self.daynum, self.dayfrc
-  local bias  = getbiasutc2(self)
-  if bias then
+  bias = self.bias or getbiasutc2(self)
+  if bias != nil then
     -- utc = local + bias; local = utc - bias
     self.daynum = dn
     self.dayfrc = df - bias*TICKSPERSEC
@@ -665,7 +673,7 @@ end
 
 function dobj:toutc()
   local dn,df = self.daynum, self.dayfrc
-  local bias  = getbiasloc2(dn, df)
+  local bias  = self.bias or getbiasloc2(dn, df)
   if bias then
     -- utc = local + bias;
     self.daynum = dn
@@ -676,9 +684,11 @@ function dobj:toutc()
   end
 end
 
-function dobj:getbias()  return (getbiasloc2(self.daynum, self.dayfrc))/SECPERMIN end
+function dobj:getbias()  return self.bias != nil and self.bias/SECPERMIN or (getbiasloc2(self.daynum, self.dayfrc))/SECPERMIN end
 
 function dobj:gettzname()
+  if self.bias != nil then return "" end
+
   local _, tvu, _ = getbiasloc2(self.daynum, self.dayfrc)
   return tvu and osdate("%Z",tvu) or ""
 end

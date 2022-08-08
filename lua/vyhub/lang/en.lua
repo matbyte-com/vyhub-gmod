@@ -2,7 +2,7 @@ VyHub.lang = {
     ply = {
         group_changed = "Your group has been changed to <green>%s</green>.",
         banned = "Player <green>%s</green> has been <red>banned for %s</red>. Reason: <green>%s</green>",
-        banned_self = "You are banned from this server.",
+        banned_self = "You are banned from this server",
     },
     warning = {
         error = "Error while adding warning for player <green>%s</green>",
@@ -11,7 +11,7 @@ VyHub.lang = {
         cmd_help = "<red>Invlid player!</red> Usage: <green>!warn <nick> <reason></green>"
     },
     ban = {
-        created = "Successfully added %s ban for user %s: %s.",
+        created = "Successfully added ban for user %s: %s.",
     },
     rslots = {
         kick = "A player with a reserved slot connected to the server and you got kicked to free up space",

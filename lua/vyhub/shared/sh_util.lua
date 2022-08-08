@@ -196,3 +196,9 @@ function VyHub.Util:hex2rgb(hex)
     	return Color(255,255,255)
     end
 end
+
+function VyHub.Util:iso_ts_to_local_str(iso_ts)
+	local bias = VyHub.Config.time_offset != nil and -math.Round(VyHub.Config.time_offset * 60 * 60) or nil
+
+	return date(iso_ts):setbias(bias):tolocal():fmt(VyHub.Config.date_format)
+end

@@ -126,7 +126,6 @@ function VyHub.Ban:handle_queue()
                                             VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()
 
-                                            local length = f("%s %s", math.Round(data.length/60), VyHub.lang.other.minutes)
                                             local msg = f(VyHub.lang.ban.created, user.username, data.reason)
 
                                             VyHub:msg(msg, "success")
@@ -300,8 +299,8 @@ end
 function VyHub.Ban:create_ban_msg(ban)
     local msg = VyHub.Config.ban_message or default_ban_msg
 
-    local created_on = date(ban.created_on):tolocal():fmt(VyHub.Config.date_format)
-    local ends_on = ban.ends_on != nil and date(ban.ends_on):tolocal():fmt(VyHub.Config.date_format) or VyHub.lang.other.never
+    local created_on = VyHub.Util:iso_ts_to_local_str(ban.created_on)
+    local ends_on = ban.ends_on != nil and VyHub.Util:iso_ts_to_local_str(ban.ends_on) or VyHub.lang.other.never
     local creator_username = ban.creator != nil and ban.creator.username or VyHub.lang.other.unknown
     local id = string.upper(string.sub(ban.id, 1, 8))
     local unban_url = VyHub.Config.unban_url or VyHub.frontend_url or '-'
