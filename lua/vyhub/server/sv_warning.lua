@@ -50,23 +50,27 @@ hook.Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()
     end)
 
     VyHub.Util:register_chat_command("!warn", function(ply, args)
-		if not args[1] or not args[2] then return end
+		if args[1] and args[2] then 
+            local reason = VyHub.Util:concat_args(args, 2)
 
-		local reason = VyHub.Util:concat_args(args, 2)
+            local target = VyHub.Util:get_player_by_nick(args[1])
+    
+            if target and IsValid(target) then
+                local nickparts = string.Explode(' ', target:Nick())
+    
+                if #nickparts > 1 then
+                    nickparts = VyHub.Util:concat_args(nickparts, 2) .. ' '
+                    reason = string.Replace(reason, nickparts, '')
+                end
+    
+                VyHub.Warning:create(target:SteamID64(), reason, ply:SteamID64())
+            end
+        end
 
-		local target = VyHub.Util:get_player_by_nick(args[1])
+        if IsValid(ply) then
+            VyHub.Util:print_chat(ply, VyHub.lang.warning.cmd_help)
+        end
 
-		if target and IsValid(target) then
-			local nickparts = string.Explode(' ', target:Nick())
-
-			if #nickparts > 1 then
-				nickparts = VyHub.Util:concat_args(nickparts, 2) .. ' '
-				reason = string.Replace(reason, nickparts, '')
-			end
-
-			VyHub.Warning:create(target:SteamID64(), reason, ply:SteamID64())
-
-			return false;
-		end
+        return false;
 	end)
 end)
