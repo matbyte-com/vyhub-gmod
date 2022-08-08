@@ -6,6 +6,8 @@ VyHub.Server.extra_defaults = {
     res_slots_hide = false,
 }
 
+VyHub.Server.reserved_slot_plys = VyHub.Server.reserved_slot_plys or {}
+
 function VyHub.Server:get_extra(key)
     if VyHub.server.extra != nil and VyHub.server.extra[key] != nil then
         return VyHub.server.extra[key]
@@ -20,7 +22,7 @@ function VyHub.Server:update_status()
     for _, ply in pairs(player.GetHumans()) do
         local id = ply:VyHubID()
 
-        if id != nil then
+        if id then
             local tt = string.FormattedTime( ply:TimeConnected() )
 
             table.insert(user_activities, { user_id = id, extra = { 
@@ -78,6 +80,54 @@ function VyHub.Server:init_slots()
 	end
 end
 
+function VyHub.Server:can_use_rslot(ply)
+    if not IsValid(ply) or ply:IsBot() then
+        return false
+    end
+
+    if table.HasValue(VyHub.Server.reserved_slot_plys, ply:SteamID64()) then
+        return true
+    end
+
+    local group = VyHub.Player:get_group(ply)
+
+    if group != nil then
+        if group.properties.reserved_slot_use != nil then
+            return group.properties.reserved_slot_use.granted
+        end
+    end
+
+    return false
+end
+
+function VyHub.Server:handle_ply_connect(ply)
+    if IsValid(ply) then
+        if #player.GetAll() > VyHub.Server.max_slots then
+			if VyHub.Server:can_use_rslot(ply) then
+				if VyHub.Server:get_extra("res_slots_keep_free") then
+					local tokick = nil
+
+					for _, v in pairs(player.GetAll()) do
+						if v:SteamID64() != ply:SteamID64() and not VyHub.Server:can_use_rslot(v) then
+							if tokick == nil or (IsValid(tokick) and v:TimeConnected() < tokick:TimeConnected()) then
+								tokick = v
+							end
+						end
+					end
+
+					if tokick and IsValid(tokick) then
+						tokick:Kick(VyHub.lang.rslots.kick)
+					else
+                        ply:Kick(VyHub.lang.rslots.full)
+					end
+				end
+			else
+				ply:Kick(VyHub.lang.rslots.full_no_slot)
+			end
+		end
+    end
+end
+
 hook.Add("vyhub_ready", "vyhub_server_vyhub_ready", function ()
     VyHub.Server:init_slots()
     VyHub.Server:update_status()
@@ -93,4 +143,8 @@ hook.Add("vyhub_ready", "vyhub_server_vyhub_ready", function ()
             end)
 		end
 	end)
+
+    hook.Add("vyhub_reward_post_connect", "vyhub_server_vyhub_reward_post_connect", function (ply)
+        VyHub.Server:handle_ply_connect(ply)
+    end)
 end)

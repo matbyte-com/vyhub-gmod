@@ -19,7 +19,7 @@ local RewardType = {
     MEMBERSHIP = "MEMBERSHIP",
 }
 
-function VyHub.Reward:refresh(callback, limit_players)
+function VyHub.Reward:refresh(callback, limit_players, err)
     local user_ids = ""
     players = limit_players or player.GetHumans()
 
@@ -59,7 +59,9 @@ function VyHub.Reward:refresh(callback, limit_players)
                 callback()
             end
         end, function (code, reason)
-            
+            if err then
+                err()
+            end
         end)
     end
 end
@@ -194,10 +196,12 @@ hook.Add("vyhub_ready", "vyhub_reward_vyhub_ready", function ()
     end)
 
     hook.Add("vyhub_ply_initialized", "vyhub_reward_vyhub_ply_initialized", function(ply)
-        VyHub.Reward:refresh(function()
+        local function exec_ply_rewards()
             VyHub.Reward:exec_rewards(RewardEvent.CONNECT, tostring(ply:SteamID64()))
-		    hook.Call("vyhub_reward_post_connect", _, ply)
-        end, { ply })
+		    hook.Run("vyhub_reward_post_connect", ply)
+        end
+
+        VyHub.Reward:refresh(exec_ply_rewards, { ply }, exec_ply_rewards)
 	end)
 
 	hook.Add("PlayerSpawn", "vyhub_reward_PlayerSpawn", function(ply) 
