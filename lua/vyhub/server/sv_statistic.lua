@@ -60,6 +60,11 @@ function VyHub.Statistic:send_playtime()
                             VyHub.Statistic.playtime[user_id] = nil
                             VyHub.Statistic:save_playtime()
                         end, function (code, reason)
+                            if code == 404 then
+                                VyHub.Statistic.playtime[user_id] = nil
+                                VyHub.Statistic:save_playtime()
+                            end
+                            
                             VyHub:msg(f("Could not send %s seconds playtime of %s to API.", seconds, user_id), "warning")
                         end)
                     end
