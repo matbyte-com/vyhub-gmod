@@ -9,7 +9,7 @@ VyHub.Config.chat_tags = true
 VyHub.Config.date_format = "%Y-%m-%d %H:%M:%S %z"
 -- Time offset from UTC (+00:00)
 -- Uses the timezone of the GMOD server when set to nil
--- Example: +2 for CEST, -5 for EST
+-- Example: 2 for CEST, -5 for EST
 VyHub.Config.time_offset = nil
 
 -- Debug mode. Enable to see all API requests and responses
