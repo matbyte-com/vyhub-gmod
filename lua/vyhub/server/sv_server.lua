@@ -102,12 +102,12 @@ end
 
 function VyHub.Server:handle_ply_connect(ply)
     if IsValid(ply) then
-        if #player.GetAll() > VyHub.Server.max_slots then
+        if #player.GetHumans() > VyHub.Server.max_slots then
 			if VyHub.Server:can_use_rslot(ply) then
 				if VyHub.Server:get_extra("res_slots_keep_free") then
 					local tokick = nil
 
-					for _, v in pairs(player.GetAll()) do
+					for _, v in pairs(player.GetHumans()) do
 						if v:SteamID64() != ply:SteamID64() and not VyHub.Server:can_use_rslot(v) then
 							if tokick == nil or (IsValid(tokick) and v:TimeConnected() < tokick:TimeConnected()) then
 								tokick = v
