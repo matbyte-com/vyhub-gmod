@@ -66,3 +66,11 @@ hook.Add("vyhub_api_failed", "vyhub_main_vyhub_api_failed", function ()
         end)
     end
 end)
+
+timer.Create("vyhub_not_ready_msg", 30, 0, function ()
+    if VyHub.ready then
+        timer.Remove("vyhub_not_ready_msg")
+    else
+        VyHub.Util:print_chat_all("<green>VyHub</green> is not ready. Pleae check the server log/console for errors.")
+    end
+end)
