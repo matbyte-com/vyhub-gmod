@@ -29,6 +29,10 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
             end
         else
             VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
+            
+            if code != 502 then
+                VyHub:msg(string.format("Response: %s", body), "error")
+            end
 
             if failed != nil then
                 local err_text = json.encode(result)
