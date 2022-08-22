@@ -152,9 +152,11 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
     end)
 
     hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
-		net.Start("vyhub_group_data")
-			net.WriteTable(VyHub.groups_mapped)
-		net.Send(ply)
+        if groups_mapped != nil then
+            net.Start("vyhub_group_data")
+                net.WriteTable(VyHub.groups_mapped)
+            net.Send(ply)
+        end
 	end)
 
 	concommand.Add("vyhub_setgroup", function(ply, _, args)
