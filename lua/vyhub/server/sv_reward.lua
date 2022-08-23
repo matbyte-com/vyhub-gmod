@@ -27,7 +27,7 @@ function VyHub.Reward:refresh(callback, limit_players, err)
         if IsValid(ply) then
             local id = ply:VyHubID()
 
-            if id and string.len(id) == 32 then
+            if id and string.len(id) == 36 then
                 local glue = '&'
 
                 if user_ids == "" then

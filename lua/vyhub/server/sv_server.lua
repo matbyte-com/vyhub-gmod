@@ -22,7 +22,7 @@ function VyHub.Server:update_status()
     for _, ply in pairs(player.GetHumans()) do
         local id = ply:VyHubID()
 
-        if id and string.len(id) == 32 then
+        if id and string.len(id) == 36 then
             local tt = string.FormattedTime( ply:TimeConnected() )
 
             table.insert(user_activities, { user_id = id, extra = { 
