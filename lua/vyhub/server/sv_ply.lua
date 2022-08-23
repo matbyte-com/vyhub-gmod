@@ -128,7 +128,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if highest == nil then
-            VyHub:msg(string.format("Could not find any active group for %s", ply:SteamID64()), "error")
+            VyHub:msg(string.format("Could not find any active group for %s (%s)", ply:Nick(), ply:SteamID64()), "error")
             return
         end
 
