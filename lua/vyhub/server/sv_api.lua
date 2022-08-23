@@ -3,7 +3,9 @@ VyHub.API = VyHub.API or {}
 local content_type = "application/json; charset=utf-8"
 
 
-function VyHub.API:request(method, url, path_params, query, headers, request_body, type, success, failed)
+function VyHub.API:request(method, url, path_params, query, headers, request_body, type, success, failed, no_error_for)
+    no_error_for = no_error_for or {}
+    
     if path_params != nil then
         url = string.format(url, unpack(path_params))
     end
@@ -28,10 +30,12 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
                 success(code, result, headers)
             end
         else
-            VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
-            
-            if code != 502 then
-                VyHub:msg(string.format("Response: %s", body), "error")
+            if not table.HasValue(no_error_for, code) then
+                VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
+                
+                if code != 502 then
+                    VyHub:msg(string.format("Response: %s", body), "error")
+                end
             end
 
             if failed != nil then
@@ -66,10 +70,10 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
     })
 end
 
-function VyHub.API:get(endpoint, path_params, query, success, failed)
+function VyHub.API:get(endpoint, path_params, query, success, failed, no_error_for)
     url = string.format("%s%s", VyHub.API.url, endpoint)
 
-    VyHub.API:request("GET", url, path_params, query, self.headers, nil, content_type, success, failed)
+    VyHub.API:request("GET", url, path_params, query, self.headers, nil, content_type, success, failed, no_error_for)
 end
 
 function VyHub.API:delete(endpoint, path_params, success, failed)

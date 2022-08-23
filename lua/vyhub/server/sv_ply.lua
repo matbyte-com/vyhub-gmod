@@ -8,19 +8,21 @@ local meta_ply = FindMetaTable("Player")
 function VyHub.Player:initialize(ply, retry)
     if not IsValid(ply) then return end
 
-    VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), ply:SteamID64()))
+    local steamid = ply:SteamID64()
 
-    VyHub.API:get("/user/%s", {ply:SteamID64()}, {type = "STEAM"}, function(code, result)
-        VyHub:msg(string.format("Found existing user %s for steam id %s (%s).", result.id, ply:SteamID64(), ply:Nick()), "success")
+    VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), steamid))
 
-        VyHub.Player.table[ply:SteamID64()] = result
+    VyHub.API:get("/user/%s", {steamid}, {type = "STEAM"}, function(code, result)
+        VyHub:msg(string.format("Found existing user %s for steam id %s (%s).", result.id, steamid, ply:Nick()), "success")
+
+        VyHub.Player.table[steamid] = result
         ply:SetNWString("vyhub_id", result.id)
 
         VyHub.Player:refresh(ply)
 
         hook.Run("vyhub_ply_initialized", ply)
 
-        local ply_timer_name = "vyhub_player_" .. ply:SteamID64()
+        local ply_timer_name = "vyhub_player_" .. steamid
 
         timer.Create(ply_timer_name, VyHub.Config.player_refresh_time, 0, function()
             if IsValid(ply) then
@@ -31,7 +33,7 @@ function VyHub.Player:initialize(ply, retry)
         end)
     end, function(code, reason)
         if code != 404 then
-            VyHub:msg(string.format("Could not check if users %s exists. Retrying in a minute..", ply:SteamID64()), "error")
+            VyHub:msg(string.format("Could not check if users %s exists. Retrying in a minute..", steamid), "error")
 
             timer.Simple(60, function ()
                 VyHub.Player:initialize(ply)
@@ -41,7 +43,7 @@ function VyHub.Player:initialize(ply, retry)
         end
 
         if retry then
-            VyHub:msg(string.format("Could not create user %s. Retrying in a minute..", ply:SteamID64()), "error")
+            VyHub:msg(string.format("Could not create user %s. Retrying in a minute..", steamid), "error")
 
             timer.Simple(60, function()
                 VyHub.Player:initialize(ply)
@@ -55,7 +57,7 @@ function VyHub.Player:initialize(ply, retry)
         end, function ()
             VyHub.Player:initialize(ply, true)
         end)
-    end)
+    end, { 404 })
 end
 
 function VyHub.Player:create(steamid, success, err)
@@ -72,6 +74,8 @@ function VyHub.Player:create(steamid, success, err)
     end)
 end
 
+-- Return nil if steamid is nil or API error
+-- Return false if steamid is false or could not create user
 function VyHub.Player:get(steamid, callback, retry)
     if steamid == nil then
         callback(nil)
@@ -189,7 +193,7 @@ function meta_ply:VyHubID(callback)
 
         if id == nil or id == "" then
             VyHub.Player:get(self:SteamID64(), function(user)
-                if user != nil then
+                if user then
                     self:SetNWString("vyhub_id", user.id)
 
                     if callback then
