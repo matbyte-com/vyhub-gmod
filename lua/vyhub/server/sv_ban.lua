@@ -15,14 +15,6 @@ VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
 ]]--
 
 
-local default_ban_msg = ">>> Ban Message <<<" .. "\n\n"
-.. VyHub.lang.other.reason .. ": %reason%" .. "\n" 
-.. VyHub.lang.other.ban_date .. ": %ban_date%" .. "\n" 
-.. VyHub.lang.other.unban_date .. ": %unban_date%" .. "\n" 
-.. VyHub.lang.other.admin .. ": %admin%" .. "\n" 
-.. VyHub.lang.other.id .. ": %id%" .. "\n\n" 
-.. VyHub.lang.other.unban_url .. ": %unban_url%" .. "\n\n" 
-
 function VyHub.Ban:check_player_banned(steamid)
     local bans = VyHub.bans[steamid]
     local queued_bans = VyHub.Ban.ban_queue[steamid]
@@ -297,7 +289,7 @@ function VyHub.Ban:clear()
 end
 
 function VyHub.Ban:create_ban_msg(ban)
-    local msg = VyHub.Config.ban_message or default_ban_msg
+    local msg = VyHub.Config.ban_message
 
     local created_on = VyHub.Util:iso_ts_to_local_str(ban.created_on)
     local ends_on = ban.ends_on != nil and VyHub.Util:iso_ts_to_local_str(ban.ends_on) or VyHub.lang.other.never

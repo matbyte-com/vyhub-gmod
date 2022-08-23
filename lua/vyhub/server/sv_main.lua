@@ -41,11 +41,15 @@ hook.Add("vyhub_api_ready", "vyhub_main_vyhub_api_ready", function ()
     VyHub.API:get("/server/%s", { VyHub.Config.server_id }, nil, function(code, result) 
         VyHub.server = result
 
-        VyHub.Cache:save("server", VyHub.server)
-
         VyHub:server_data_ready()
+
+        VyHub.Cache:save("server", VyHub.server)
     end, function (code, result)
-        VyHub:msg(string.format("Could not find server with id %s", VyHub.Config.server_id))
+        VyHub:msg(f("Could not find server with id %s", VyHub.Config.server_id), "error")
+
+        timer.Simple(60, function ()
+            hook.Run("vyhub_loading_finish")
+        end)
     end)
 
     VyHub:get_frontend_url()

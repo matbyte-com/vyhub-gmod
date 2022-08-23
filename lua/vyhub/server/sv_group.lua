@@ -159,7 +159,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
         end
 	end)
 
-	concommand.Add("vyhub_setgroup", function(ply, _, args)
+	concommand.Add("vh_setgroup", function(ply, _, args)
 		if VyHub.Util:is_server(ply) then
 			local steamid = args[1]
 			local group = args[2]
@@ -169,7 +169,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 				VyHub.Group:set(steamid, group)
 			end
 		end
-	end, _, bit.bor(FCVAR_SERVER_CAN_EXECUTE, FCVAR_PROTECTED))
+	end)
 
 	local _setusergroup = meta_ply.SetUserGroup
 

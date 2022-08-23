@@ -202,3 +202,14 @@ function VyHub.Util:iso_ts_to_local_str(iso_ts)
 
 	return date(iso_ts):setbias(bias):tolocal():fmt(VyHub.Config.date_format)
 end
+
+
+function VyHub.Util:invalid_str(str_list)
+	for _, str in ipairs(str_list) do
+		if str == nil or string.Trim(str) == "" then
+			return true
+		end
+	end
+
+	return false
+end

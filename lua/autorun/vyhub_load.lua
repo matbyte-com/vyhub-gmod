@@ -76,6 +76,8 @@ if SERVER then
 
         file.CreateDir("vyhub")
 
+        VyHub.Config:load_cache_config()
+
         timer.Simple(2, function()
             hook.Run("vyhub_loading_finish")
         end)

@@ -13,7 +13,7 @@ VyHub.Config.advert_interval = 180
 VyHub.Config.advert_prefix = "[★] " 
 
 -- Replace ULib ban list with VyHub bans
-VyHub.Config.replace_ulib_bans = true
+VyHub.Config.replace_ulib_bans = false
 
 -- Customize the ban message that banned players see when trying to connect
 VyHub.Config.ban_message = ">>> Ban Message <<<" .. "\n\n"

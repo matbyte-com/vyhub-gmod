@@ -101,6 +101,16 @@ function VyHub.API:put(endpoint, path_params, body, success, failed)
 end
 
 hook.Add("vyhub_loading_finish", "vyhub_api_vyhub_loading_finish", function()
+    if VyHub.Util:invalid_str({VyHub.Config.api_url, VyHub.Config.api_key, VyHub.Config.server_id}) then
+        VyHub:msg("API URL, Server ID or API Key not set! Please follow the manual.", "error")
+
+        timer.Simple(60, function ()
+            hook.Run("vyhub_loading_finish")
+        end)
+
+        return
+    end
+
     VyHub.API.url = VyHub.Config.api_url
     VyHub.API.headers = {
         Authorization = string.format("Bearer %s", VyHub.Config.api_key)
@@ -123,6 +133,8 @@ hook.Add("vyhub_loading_finish", "vyhub_api_vyhub_loading_finish", function()
     end)
 end)
 
-concommand.Add("vyhub_reinit", function ()
+concommand.Add("vh_reinit", function (ply)
+    if not VyHub.Util:is_server(ply) then return end
+
     hook.Run("vyhub_loading_finish")
 end)
