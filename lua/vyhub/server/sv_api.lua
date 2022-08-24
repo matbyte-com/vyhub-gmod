@@ -31,7 +31,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
             end
         else
             if not table.HasValue(no_error_for, code) then
-                VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s\nResponse: %s", method, url, code, json.encode(query), request_body, body), "error")
+                VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s", method, url, code, json.encode(query), request_body), "error")
                 
                 if code != 502 then
                     VyHub:msg(string.format("Response: %s", body), "error")
