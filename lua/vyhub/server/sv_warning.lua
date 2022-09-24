@@ -6,6 +6,7 @@ function VyHub.Warning:create(steamid, reason, processor_steamid)
     VyHub.Player:get(steamid, function (user)
         if user == nil then
             VyHub.Util:print_chat_steamid(processor_steamid, f("<red>Cannot find VyHub user with SteamID %s.</red>", steamid))
+            return 
         end
 
         VyHub.Player:get(processor_steamid, function (processor)
