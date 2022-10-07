@@ -1,4 +1,5 @@
 VyHub.Ban = VyHub.Ban or {}
+VyHub.bans = VyHub.bans or {}
 VyHub.Ban.ban_queue = VyHub.Ban.ban_queue or {}
 VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
 
