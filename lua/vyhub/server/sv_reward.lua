@@ -166,13 +166,21 @@ function VyHub.Reward:exec_rewards(event, steamid)
 end
 
 function VyHub.Reward:do_string_replacements(inp_str, ply, areward)
+    local purchase_amount = "-"
+
+    if areward.applied_packet.purchase != nil then
+        purchase_amount = areward.applied_packet.purchase.amount_text
+    end
+
     local replacements = {
         ["user_id"] = ply:VyHubID(), 
         ["nick"] = ply:Nick(), 
         ["steamid64"] = ply:SteamID64(), 
         ["steamid32"] = ply:SteamID(), 
         ["uniqueid"] = ply:UniqueID(), 
-        ["applied_packet_id"] = areward.applied_packet_id, 
+        ["applied_packet_id"] = areward.applied_packet_id,
+        ["packet_title"] = areward.applied_packet.packet.title,
+        ["purchase_amount"] = purchase_amount,
     }
 
     for k, v in pairs(replacements) do
