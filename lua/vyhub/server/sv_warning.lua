@@ -30,14 +30,63 @@ function VyHub.Warning:create(steamid, reason, processor_steamid)
                 VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.created, user.username, reason))
                 VyHub.Util:print_chat_steamid(steamid, f(VyHub.lang.warning.received, processor.username, reason))
                 VyHub.Util:play_sound_steamid(steamid, "https://www.dropbox.com/s/q8dget89wvdcyog/negativebeep.wav?dl=1")
+                hook.Run("vyhub_dashboard_data_changed")
             end, function (code, err_reason, _, err_text)
                 VyHub:msg(f("Error while adding warning for player %s: %s", user.username, err_text), "error")
-                VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.error, user.username, err_text))
+                VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.create_error, user.username, err_text))
             end)
         end)
     end)
 end
 
+
+function VyHub.Warning:delete(warning_id, processor_steamid)
+    processor_steamid = processor_steamid or nil
+
+    VyHub.Player:get(processor_steamid, function (processor)
+        if not processor then return end
+
+        local url = '/warning/%s'
+
+        if processor != nil then
+            url = url .. f('?morph_user_id=%s', processor.id)
+        end
+
+        VyHub.API:delete(url, { warning_id }, function (code, result)
+            VyHub:msg(f("%s deleted warning %s.", processor.username, warning_id))
+            VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.deleted))
+            VyHub.Util:print_chat_steamid(steamid, VyHub.lang.warning.deleted_self)
+            hook.Run("vyhub_dashboard_data_changed")
+        end, function (code, err_reason, _, err_text)
+            VyHub:msg(f("Error while deleteing warning %s: %s", warning_id, err_text), "error")
+            VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.other.error_api, err_text))
+        end)
+    end)
+end
+
+function VyHub.Warning:toggle(warning_id, processor_steamid)
+    processor_steamid = processor_steamid or nil
+
+    VyHub.Player:get(processor_steamid, function (processor)
+        if not processor then return end
+
+        local url = '/warning/%s/toggle'
+
+        if processor != nil then
+            url = url .. f('?morph_user_id=%s', processor.id)
+        end
+
+        VyHub.API:patch(url, { warning_id }, nil, function (code, result)
+            VyHub:msg(f("%s toggled warning %s.", processor.username, warning_id))
+            VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.warning.toggled))
+            VyHub.Util:print_chat_steamid(steamid, VyHub.lang.warning.toggled_self)
+            hook.Run("vyhub_dashboard_data_changed")
+        end, function (code, err_reason, _, err_text)
+            VyHub:msg(f("Error while toggling status of warning %s: %s", warning_id, err_text), "error")
+            VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.other.error_api, err_text))
+        end)
+    end)
+end
 
 hook.Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()   
     concommand.Add("vh_warn", function(ply, _, args)
@@ -46,11 +95,52 @@ hook.Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()
         if VyHub.Util:is_server(ply) then
             VyHub.Warning:create(args[1], args[2])
         elseif IsValid(ply) then
-            VyHub.Warning:create(args[1], args[2], ply:SteamID64())
+            if VyHub.Player:check_property(ply, "warning_edit") then
+                VyHub.Warning:create(args[1], args[2], ply:SteamID64())
+            else
+                VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            end
+        end
+    end)
+
+    concommand.Add("vh_warning_toggle", function(ply, _, args)
+        if not args[1] then return end
+
+        local warning_id = args[1]
+
+        if VyHub.Util:is_server(ply) then
+            VyHub.Warning:toggle(warning_id)
+        elseif IsValid(ply) then
+            if VyHub.Player:check_property(ply, "warning_edit") then
+                VyHub.Warning:toggle(warning_id, ply:SteamID64())
+            else
+                VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            end
+        end
+    end)
+
+    concommand.Add("vh_warning_delete", function(ply, _, args)
+        if not args[1] then return end
+
+        local warning_id = args[1]
+
+        if VyHub.Util:is_server(ply) then
+            VyHub.Warning:delete(warning_id)
+        elseif IsValid(ply) then
+            if VyHub.Player:check_property(ply, "warning_delete") then
+                VyHub.Warning:delete(warning_id, ply:SteamID64())
+            else
+                VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            end
         end
     end)
 
     VyHub.Util:register_chat_command("!warn", function(ply, args)
+        if not VyHub.Player:check_property(ply, "warning_edit") then
+            VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            return
+        end
+
 		if args[1] and args[2] then 
             local reason = VyHub.Util:concat_args(args, 2)
 

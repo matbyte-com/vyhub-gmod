@@ -126,6 +126,8 @@ function VyHub.Ban:handle_queue()
                                             if creator != nil then
                                                 VyHub.Util:print_chat_steamid(creator.identifier, msg)
                                             end
+
+                                            hook.Run("vyhub_dashboard_data_changed")
                                         end, function(code, reason)
                                             if code >= 400 and code < 500 then
                                                 msg = reason
@@ -201,6 +203,7 @@ function VyHub.Ban:handle_queue()
                             local msg = f("Successfully unbanned user %s.", steamid)
                             VyHub:msg(msg, "success")
                             VyHub.Util:print_chat_steamid(creator_steamid, msg)
+                            hook.Run("vyhub_dashboard_data_changed")
                         end, function (code, reason)
                             if code >= 400 and code < 500 then
                                 VyHub.Ban.unban_queue[steamid] = nil
@@ -260,16 +263,6 @@ end
 function VyHub.Ban:unban(steamid, processor_steamid)
     processor_steamid = processor_steamid or false
 
-    if VyHub.Ban.ban_queue[steamid] != nil then
-        for i, ban in pairs(VyHub.Ban.ban_queue[steamid]) do
-            if ban != nil and ban.status != 'UNBANNED' then
-                VyHub.Ban.ban_queue[steamid][i].status = 'UNBANNED'
-
-                VyHub:msg(string.format("Set status of queued ban of %s to UNBANNED.", steamid), 'neutral')
-            end
-        end
-    end
-
     VyHub.Ban.unban_queue[steamid] = processor_steamid
 
     VyHub.Ban:save_queues()
@@ -308,6 +301,30 @@ function VyHub.Ban:create_ban_msg(ban)
     return msg
 end
 
+
+function VyHub.Ban:ban_set_status(ban_id, status, processor_steamid)
+    processor_steamid = processor_steamid or nil
+
+    VyHub.Player:get(processor_steamid, function (processor)
+        if not processor then return end
+
+        local url = '/ban/%s'
+
+        if processor != nil then
+            url = url .. f('?morph_user_id=%s', processor.id)
+        end
+
+        VyHub.API:patch(url, { ban_id }, { status = status }, function (code, result)
+            VyHub:msg(f("%s set ban status of ban %s of user %s to %s.", processor.username, ban_id, result.user.username, status))
+            VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.ban.status_changed, result.user.username, status))
+            hook.Run("vyhub_dashboard_data_changed")
+        end, function (code, err_reason, _, err_text)
+            VyHub:msg(f("Error while settings status of ban %s: %s", ban_id, err_text), "error")
+            VyHub.Util:print_chat_steamid(processor_steamid, f(VyHub.lang.other.error_api, err_text))
+        end)
+    end)
+end
+
 hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
     VyHub.Ban:refresh()
 
@@ -339,9 +356,8 @@ hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
     end)
 end)
 
-
 hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
-    if ULib then
+    if ULib and ulx then
         ULib.kickban = function(ply, length, reason, admin)
             if IsValid(ply) then
                 if IsValid(admin) then
@@ -978,6 +994,12 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
         
         if VyHub.Util:is_server(ply) then
             VyHub.Ban:create(args[1], args[2], args[3])
+        elseif IsValid(ply) then
+            if VyHub.Player:check_property(ply, "ban_edit") then
+                VyHub.Ban:create(args[1], args[2], args[3], ply:SteamID64()) 
+            else
+                VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            end
         end
     end)
 
@@ -986,6 +1008,30 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
         
         if VyHub.Util:is_server(ply) then
             VyHub.Ban:unban(args[1])
+        elseif IsValid(ply) then
+            if VyHub.Player:check_property(ply, "ban_edit") then
+                VyHub.Ban:unban(args[1], ply:SteamID64()) 
+            else
+                VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            end
+        end
+    end)
+
+    concommand.Add("vh_ban_set_status", function(ply, _, args)
+        if not args[1] or not args[2] then return end
+        
+        if args[2] != "UNBANNED" and args[2] != "ACTIVE" then
+            return
+        end
+
+        if VyHub.Util:is_server(ply) then
+            VyHub.Ban:ban_unban(args[1], args[2])
+        elseif IsValid(ply) then
+            if VyHub.Player:check_property(ply, "ban_edit") then
+                VyHub.Ban:ban_set_status(args[1], args[2], ply:SteamID64()) 
+            else
+                VyHub.Util:print_chat(ply, VyHub.lang.ply.no_permissions)
+            end
         end
     end)
 end)

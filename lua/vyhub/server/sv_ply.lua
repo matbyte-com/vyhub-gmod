@@ -17,6 +17,7 @@ function VyHub.Player:initialize(ply, retry)
 
         VyHub.Player.table[steamid] = result
         ply:SetNWString("vyhub_id", result.id)
+        ply:SetNWBool("vyhub_admin", result.admin)
 
         VyHub.Player:refresh(ply)
 
@@ -185,6 +186,26 @@ function VyHub.Player:get_group(ply)
     end
 
     return group
+end
+
+function VyHub.Player:check_property(ply, property)
+    if not IsValid(ply) then return false end
+
+    local group = VyHub.Player:get_group(ply)
+
+    if group != nil then
+        local prop = group.properties[property]
+
+        if prop != nil and prop.granted then
+            return true 
+        end
+    end
+
+    if ply:GetNWBool("vyhub_admin", false) then
+        return true
+    end
+
+    return false
 end
 
 function meta_ply:VyHubID(callback)
