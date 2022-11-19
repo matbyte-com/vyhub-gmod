@@ -43,6 +43,9 @@ function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.ui_html:AddFunction("vyhub", "ban_set_status", function (ban_id, status)
 		LocalPlayer():ConCommand(f("vh_ban_set_status %s %s", ban_id, status))
 	end)
+	VyHub.Dashboard.ui_html:AddFunction("vyhub", "warning_create", function (steamid, reason)
+		LocalPlayer():ConCommand(f("vh_warn %s %s", steamid, reason))
+	end)
 end
 
 
@@ -125,6 +128,17 @@ dashboard_html = [[
 							<span class="label label-success">Active</span>
 							<span class="label label-warning">Inactive</span>
 							<span class="label label-default">Disabled</span>
+						</div>
+
+						<br/>
+
+						<div class="row">
+							<div class="col-xs-10">
+								<input id="user_warn" type="text" class="form-control"  style="background-color: #303030; color: white; height: 30px;" onclick="$('#user_warn').val('');" placeholder="Reason" />
+							</div>
+							<div class="col-xs-2" style="padding-left: 0;">
+								<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Warn</button>
+							</div>
 						</div>
 
 						<hr />
@@ -229,7 +243,7 @@ dashboard_html = [[
 			}
 
 			function generate_user_overview(user_id) {
-				current_user = user_id;
+				current_user = null;
 
 				$('#user_content_empty').hide();
 				$('#user_content').hide();
@@ -239,6 +253,8 @@ dashboard_html = [[
 
 				var activity = user.activities[0];
 				if (activity == null) { return; }
+
+				current_user = user;
 
 				$('#user_content_name').text(activity.extra.Nickname);
 				$('#user_content_username').text(user.username);
@@ -314,15 +330,25 @@ dashboard_html = [[
 					$('#user_memberships').append('<span class="label label-default" style="background-color: ' + membership.group.color + ';">' + membership.group.name + '</span>');
 				});
 
-				
-
 				$('#user_content').show();
 			}
 
 			function reload_current_user() {
 				if (current_user != null) {
-					generate_user_overview(current_user);
+					generate_user_overview(current_user.id);
 				}
+			}
+
+			function create_warning() {
+				if (current_user == null) {
+					return;
+				}
+
+				var reason = $('#user_warn').val();
+
+				vyhub.warning_create(current_user.identifier, reason);
+
+				$('#user_warn').val('');
 			}
 		</script>
     </html>
