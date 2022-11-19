@@ -46,6 +46,9 @@ function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.ui_html:AddFunction("vyhub", "warning_create", function (steamid, reason)
 		LocalPlayer():ConCommand(f("vh_warn %s %s", steamid, reason))
 	end)
+	VyHub.Dashboard.ui_html:AddFunction("vyhub", "ban_create", function (steamid, minutes, reason)
+		LocalPlayer():ConCommand(f('vh_ban %s %s "%s"', steamid, minutes, reason))
+	end)
 end
 
 
@@ -72,6 +75,12 @@ dashboard_html = [[
 				body{
 					overflow-x: hidden;
 				}
+
+				.vh-input {
+					background-color: #303030; 
+					color: white; 
+					height: 30px;
+				}
 			</style>
 		</head>
         <body>	
@@ -83,7 +92,7 @@ dashboard_html = [[
 				<div class="col-xs-3">
 					<div class="input-group">
 						<div style="height: 20px;" class="input-group-addon"><i class="fa-solid fa-search fa-xs"></i></div>
-						<input id="user_search" type="text" class="form-control"  style="background-color: #303030; color: white; height: 30px;" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
+						<input id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
 					</div>
 					<hr>
 					<ul class="nav nav-tabs tabs-left" id="user_list">
@@ -134,7 +143,7 @@ dashboard_html = [[
 
 						<div class="row">
 							<div class="col-xs-10">
-								<input id="user_warn" type="text" class="form-control"  style="background-color: #303030; color: white; height: 30px;" onclick="$('#user_warn').val('');" placeholder="Reason" />
+								<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="Reason" />
 							</div>
 							<div class="col-xs-2" style="padding-left: 0;">
 								<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Warn</button>
@@ -163,6 +172,20 @@ dashboard_html = [[
 							<span class="label label-info">Active (Global)</span>
 							<span class="label label-warning">Unbanned</span>
 							<span class="label label-danger">Inactive</span>
+						</div>
+
+						<br/>
+
+						<div class="row">
+							<div class="col-xs-8">
+								<input id="user_ban_reason" type="text" class="form-control vh-input" onclick="$('#user_ban_reason').val('');" placeholder="Reason" />
+							</div>
+							<div class="col-xs-2" style="padding-left: 0;">
+								<input id="user_ban_minutes" type="text" class="form-control vh-input" onclick="$('#user_ban_minutes').val('');" placeholder="Minutes" />
+							</div>
+							<div class="col-xs-2" style="padding-left: 0;">
+								<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa-solid fa-gavel"></i> &nbsp; Ban</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -349,6 +372,20 @@ dashboard_html = [[
 				vyhub.warning_create(current_user.identifier, reason);
 
 				$('#user_warn').val('');
+			}
+
+			function create_ban() {
+				if (current_user == null) {
+					return;
+				}
+
+				var reason = $('#user_ban_reason').val();
+				var minutes = $('#user_ban_minutes').val();
+
+				vyhub.ban_create(current_user.identifier, minutes, reason);
+
+				$('#user_ban_reason').val('');
+				$('#user_ban_minutes').val('');
 			}
 		</script>
     </html>
