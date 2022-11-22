@@ -61,8 +61,6 @@ dashboard_html = [[
 			<!-- Botstrap CSS -->
 			<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"> -->
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@3.4.1/darkly/bootstrap.min.css" integrity="sha384-nNK9n28pDUDDgIiIqZ/MiyO3F4/9vsMtReZK39klb/MtkZI3/LtjSjlmyVPS3KdN" crossorigin="anonymous">	
-			<!-- Vertical Tabs CSS -->
-			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-vertical-tabs@1.2.2/bootstrap.vertical-tabs.min.css">		
 			<!-- FA -->
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/solid.min.css" integrity="sha512-uj2QCZdpo8PSbRGL/g5mXek6HM/APd7k/B5Hx/rkVFPNOxAQMXD+t+bG4Zv8OAdUpydZTU3UHmyjjiHv2Ww0PA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/fontawesome.min.css" integrity="sha512-RvQxwf+3zJuNwl4e0sZjQeX7kUa3o82bDETpgVCH2RiwYSZVDdFJ7N/woNigN/ldyOOoKw8584jM4plQdt8bhA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -82,6 +80,19 @@ dashboard_html = [[
 					color: white; 
 					height: 30px;
 				}
+
+				.nav-pills .active {
+					background-color: #303030;
+					font-weight: bold;
+					margin-left: 4px;
+				}
+
+				.user-tab {
+					padding: 3px 6px 3px 6px;
+					border-radius: 8px;
+					text-overflow: ellipsis;
+					overflow:hidden; 
+				}
 			</style>
 		</head>
         <body>	
@@ -95,8 +106,8 @@ dashboard_html = [[
 						<div style="height: 20px;" class="input-group-addon"><i class="fa-solid fa-search fa-xs"></i></div>
 						<input id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
 					</div>
-					<hr>
-					<ul class="nav nav-tabs tabs-left" id="user_list">
+					<br/>
+					<ul class="nav nav-pills nav-stacked" id="user_list">
 
 					</ul>
 				</div>
@@ -105,7 +116,7 @@ dashboard_html = [[
 						Please select an user.
 					</div>
 					<div class="tab-content" id="user_content" style="display: none;">
-						<h3 style="margin: 10px 0px 0px 0;">
+						<h3 style="margin: 5px 0px 0px 0;">
 							<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
 								<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
 							</span>
@@ -282,6 +293,12 @@ dashboard_html = [[
 
 				$('#user_content_name').text(activity.extra.Nickname);
 				$('#user_content_username').text(user.username);
+
+				if (activity.extra.Nickname === user.username) {
+					$('#user_content_username').hide();
+				} else {
+					$('#user_content_username').show();
+				}
 
 				$('.user-tab').removeClass("active");
 				$('#user_tab_' + user_id).addClass("active");

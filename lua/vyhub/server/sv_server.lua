@@ -49,7 +49,9 @@ function VyHub.Server:update_status()
         '/server/%s',
         {VyHub.server.id},
         data,
-        nil,
+        function ()
+            hook.Run("vyhub_dashboard_data_changed") 
+        end,
         function ()
             VyHub:msg("Could not update server status.", "error")
         end
