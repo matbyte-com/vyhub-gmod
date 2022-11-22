@@ -74,6 +74,7 @@ dashboard_html = [[
 
 				body{
 					overflow-x: hidden;
+					overflow-y: scroll;
 				}
 
 				.vh-input {
@@ -105,21 +106,31 @@ dashboard_html = [[
 					</div>
 					<div class="tab-content" id="user_content" style="display: none;">
 						<h3 style="margin: 10px 0px 0px 0;">
-							<span class="label label-default" style="background-color: #5E0000">
+							<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
 								<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
+							</span>
+							<span class="label label-default" style="border-radius: 0 .25em .25em 0;">
+								<span id="user_content_username"></span>
 							</span>
 							<span id="user_memberships" class="pull-right">
 							</span>
 						</h3>
-						<h5 style="margin: 12px 0px 20px 0;">
-							<span class="label label-default">
-								<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_username"></span>
-							</span>
-						</h5>
 
 						<hr/>
 
 						<h4><span class="label label-default"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp;Warnings</span></h3>
+
+						<div class="row">
+							<div class="col-xs-10">
+								<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="Reason" />
+							</div>
+							<div class="col-xs-2" style="padding-left: 0;">
+								<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Warn</button>
+							</div>
+						</div>
+
+						<br/>
+
 						<table class="table table-condensed table-hover">
 							<tr>
 								<th width="10px"></th>
@@ -139,20 +150,24 @@ dashboard_html = [[
 							<span class="label label-default">Disabled</span>
 						</div>
 
-						<br/>
-
-						<div class="row">
-							<div class="col-xs-10">
-								<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="Reason" />
-							</div>
-							<div class="col-xs-2" style="padding-left: 0;">
-								<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Warn</button>
-							</div>
-						</div>
-
 						<hr />
 						
 						<h4><span class="label label-default"><i class="fa-solid fa-gavel"></i> &nbsp;Bans</span></h3>
+
+						<div class="row">
+							<div class="col-xs-8">
+								<input id="user_ban_reason" type="text" class="form-control vh-input" onclick="$('#user_ban_reason').val('');" placeholder="Reason" />
+							</div>
+							<div class="col-xs-2" style="padding-left: 0;">
+								<input id="user_ban_minutes" type="text" class="form-control vh-input" onclick="$('#user_ban_minutes').val('');" placeholder="Minutes" />
+							</div>
+							<div class="col-xs-2" style="padding-left: 0;">
+								<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa-solid fa-gavel"></i> &nbsp; Ban</button>
+							</div>
+						</div>
+
+						<br/>
+
 						<table class="table table-condensed table-hover">
 							<tr>
 								<th width="10px"></th>
@@ -172,20 +187,6 @@ dashboard_html = [[
 							<span class="label label-info">Active (Global)</span>
 							<span class="label label-warning">Unbanned</span>
 							<span class="label label-danger">Inactive</span>
-						</div>
-
-						<br/>
-
-						<div class="row">
-							<div class="col-xs-8">
-								<input id="user_ban_reason" type="text" class="form-control vh-input" onclick="$('#user_ban_reason').val('');" placeholder="Reason" />
-							</div>
-							<div class="col-xs-2" style="padding-left: 0;">
-								<input id="user_ban_minutes" type="text" class="form-control vh-input" onclick="$('#user_ban_minutes').val('');" placeholder="Minutes" />
-							</div>
-							<div class="col-xs-2" style="padding-left: 0;">
-								<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa-solid fa-gavel"></i> &nbsp; Ban</button>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -238,13 +239,13 @@ dashboard_html = [[
 						}
 					}
 
-					var color = 'black';
+					var color = 'white';
 					if (user.memberships.length > 0) {
 						color = user.memberships[0].group.color;
 					}
 
-					var warn_badge_color = ((user.warnings.length == 0) ? '#eee' : "#f0ad4e");
-					var ban_badge_color = ((user.bans.length == 0) ? '#eee' : "#d9534f");
+					var warn_badge_color = ((user.warnings.length == 0) ? '#444' : "#f0ad4e");
+					var ban_badge_color = ((user.bans.length == 0) ? '#444' : "#d9534f");
 
 					$('#user_list').append(' \
 					<li class="user-tab" id="user_tab_' + user.id + '" onclick="generate_user_overview(\'' + user.id + '\')" style="cursor:pointer; color: ' + color + ';"> \
