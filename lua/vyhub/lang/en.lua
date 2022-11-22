@@ -9,16 +9,16 @@ VyHub.lang = {
     warning = {
         create_error = "Error while adding warning for player <green>%s</green>",
         received = "You have received a warning by <green>%s</green>: <red>%s</red>",
-        created = "Added warning for player <green>%s</green>: %s",
         cmd_help = "<red>Invlid player!</red> Usage: <green>!warn <nick> <reason></green>",
         deleted_self = "One of your warnings has been deleted. Check your warnings with !dashboard.",
         deleted = "Warning deleted.",
         toggled = "Warning status changed.",
         toggled_self = "The status of one of your warnings has been changed. Check your warnings with !dashboard.",
+        user_warned = "<red>%s</red> has been warned by <green>%s</green>. Reason: <green>%s</green>"
     },
     ban = {
-        created = "Successfully added ban for user %s: %s.",
         status_changed = "Successfully set ban status of %s to %s.",
+        user_banned = "<red>%s</red> has been banned by <green>%s</green> for <red>%s</red>. Reason: <green>%s</green>"
     },
     rslots = {
         kick = "A player with a reserved slot connected to the server and you got kicked to free up space",
@@ -35,6 +35,7 @@ VyHub.lang = {
         never = "Never",
         unknown = "Unknown",
         minutes = "Minutes",
+        x_minutes = "%i Minutes",
         permanently = "Permanently",
         unban_url = "Unban URL",
         error_api = "Error while communicating with the API: %s"

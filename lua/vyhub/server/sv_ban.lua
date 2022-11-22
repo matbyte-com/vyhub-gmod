@@ -119,13 +119,13 @@ function VyHub.Ban:handle_queue()
                                             VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()
 
-                                            local msg = f(VyHub.lang.ban.created, user.username, data.reason)
+                                            local minutes = (data.length != nil and f(VyHub.lang.other.x_minutes, math.Round(data.length/60)) or VyHub.lang.other.permanently)
+
+                                            local msg = f(VyHub.lang.ban.user_banned, user.username, creator.username, minutes, data.reason)
 
                                             VyHub:msg(msg, "success")
 
-                                            if creator != nil then
-                                                VyHub.Util:print_chat_steamid(creator.identifier, msg)
-                                            end
+                                            VyHub.Util:print_chat_all(msg)
 
                                             hook.Run("vyhub_dashboard_data_changed")
                                         end, function(code, reason)
