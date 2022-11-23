@@ -7,7 +7,7 @@ on:
       - '*.*.*'
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
       - name: Create zip
         run: |
           cd ..
-          zip ${{ github.event.repository.name }}/${{ github.event.repository.name }}-${GITHUB_REF_NAME}.zip ${{ github.event.repository.name }} -r  -x "*/.git/*"
+          zip ${{ github.event.repository.name }}/${{ github.event.repository.name }}-${GITHUB_REF_NAME}.zip ${{ github.event.repository.name }} -r  -x "*/.git/*" -x "*/.github/*"
 
       - uses: pyTooling/Actions/releaser@main
         with:
