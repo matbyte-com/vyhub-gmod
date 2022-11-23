@@ -19,7 +19,7 @@ jobs:
           cd ..
           zip ${{ github.event.repository.name }}/${{ github.event.repository.name }}-${GITHUB_REF_NAME}.zip ${{ github.event.repository.name }} -r  -x "*/.git/*"
 
-      - uses: pyTooling/Actions/releaser
+      - uses: pyTooling/Actions/releaser@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: '${{ github.ref_name }}'
