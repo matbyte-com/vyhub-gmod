@@ -19,10 +19,10 @@ jobs:
           cd ..
           zip ${{ github.event.repository.name }}/${{ github.event.repository.name }}-${GITHUB_REF_NAME}.zip ${{ github.event.repository.name }} -r  -x "*/.git/*" -x "*/.github/*"
 
-      - uses: pyTooling/Actions/releaser@main
+      - uses:  ncipollo/release-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           tag: '${{ github.ref_name }}'
-          rm: true
-          snapshots: true
-          files: ${{ github.event.repository.name }}-${{ github.ref_name }}.zip
+          artifacts: ${{ github.event.repository.name }}-${{ github.ref_name }}.zip
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          draft: true
