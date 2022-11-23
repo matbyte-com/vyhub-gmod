@@ -6,6 +6,7 @@ This is the [VyHub](https://vyhub.net) addon for Garry's Mod.
 - :shopping_cart:	Shop / donation system -> sell items on your gameserver for real money
 - :no_entry_sign:	 Bans
 - :warning:	 Warnings
+- :framed_picture: Ingame dashboard of bans and warnings
 - :repeat:  Synchronize player groups with admin mods
 - :chart_with_upwards_trend:	Playtime statistics
 - :loudspeaker:	 Periodic adverts
