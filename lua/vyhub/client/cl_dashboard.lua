@@ -171,9 +171,9 @@ dashboard_html = [[
 						</table>
 
 						<div>
-							<span class="label label-success">Active</span>
-							<span class="label label-warning">Inactive</span>
-							<span class="label label-default">Disabled</span>
+							<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; Active</span>
+							<span class="label label-warning"><i class="fa-solid fa-hourglass"></i>&nbsp; Inactive</span>
+							<span class="label label-default"><i class="fa-solid fa-times"></i>&nbsp; Disabled</span>
 						</div>
 
 						<hr />
@@ -209,10 +209,10 @@ dashboard_html = [[
 						</table>
 
 						<div>
-							<span class="label label-success">Active</span>
-							<span class="label label-info">Active (Global)</span>
-							<span class="label label-warning">Unbanned</span>
-							<span class="label label-danger">Inactive</span>
+							<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; Active</span>
+							<span class="label label-info"><i class="fa-solid fa-globe"></i>&nbsp; Active (Global)</span>
+							<span class="label label-warning"><i class="fa-solid fa-times"></i>&nbsp; Unbanned</span>
+							<span class="label label-danger"><i class="fa-solid fa-hourglass"></i>&nbsp; Inactive</span>
 						</div>
 					</div>
 				</div>
@@ -465,12 +465,14 @@ concommand.Add("vh_dashboard", function ()
 		VyHub.Dashboard.ui:Show()
 		VyHub.Dashboard.ui:MakePopup()
 	else
-		if VyHub.Dashboard.ui != nil and VyHub.Dashboard.ui:IsValid() and VyHub.Dashboard.ui:IsVisible() then
-			VyHub.Dashboard.ui:Hide()
-		else
+		VyHub.Dashboard:create_ui()
+
+--		if VyHub.Dashboard.ui != nil and VyHub.Dashboard.ui:IsValid() and VyHub.Dashboard.ui:IsVisible() then
+--			VyHub.Dashboard.ui:Hide()
+--		else
 			VyHub.Dashboard.ui:Show()
 			VyHub.Dashboard.ui:MakePopup()
-		end
+--		end
 	end
 
 	net.Start("vyhub_dashboard")

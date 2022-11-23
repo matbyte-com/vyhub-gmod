@@ -43,8 +43,7 @@ if SERVER then
 
         -- Language
         VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
-        include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
-        AddCSLuaFile( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
+        include( vyhub_root .. '/shared/sh_lang.lua' )
 
         -- Config Files
         VyHub:msg("Loading config files...")
@@ -99,6 +98,10 @@ if CLIENT then
         include( vyhub_root .. "/lib/" .. file )
     end
 
+    -- Language
+    VyHub:msg('Loading language...')
+    include( vyhub_root .. '/shared/sh_lang.lua' )
+
     --Config Files
     VyHub:msg("Loading config files...")
     local files = file.Find( vyhub_root .."/config/*.lua", "LUA" )
@@ -107,10 +110,6 @@ if CLIENT then
             include( vyhub_root .. "/config/" .. file )
         end
     end
-
-    -- Language
-    VyHub:msg('Loading ' .. VyHub.Config.lang .. ' language...')
-    include( vyhub_root .. '/lang/' .. VyHub.Config.lang .. '.lua' )
 
     --Shared Files
     VyHub:msg("Loading shared files...")
@@ -132,5 +131,3 @@ if CLIENT then
     
     VyHub:msg("Finished loading!")
 end
-
-

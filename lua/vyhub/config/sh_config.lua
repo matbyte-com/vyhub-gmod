@@ -1,5 +1,5 @@
 -- Language used. Currently only languages in the "lang" directory are supported.
-VyHub.Config.lang = "en"
+VyHub.Config.lang = "de"
 
 -- Enable chat tags, not working together with DarkRP
 VyHub.Config.chat_tags = true
