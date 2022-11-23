@@ -1,2 +1,3 @@
 - Add in-game dashboard UI (!dashboard, vh_dashboard)
 - Improve ban/warn messages
+- Enable translations via Matbyte Translation Tool (translate.matbyte.com)
