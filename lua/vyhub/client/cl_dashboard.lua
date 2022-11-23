@@ -21,6 +21,7 @@ function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.ui:SetPos(xpos, ypos)
 	VyHub.Dashboard.ui:SetDraggable(true)
 	VyHub.Dashboard.ui:SetTitle(title)
+	VyHub.Dashboard.ui:SetDeleteOnClose(false)
 	function VyHub.Dashboard.ui.Paint(self, w, h)
 		draw.RoundedBox(0, 0, 0, w, 24, Color(94, 0, 0, 255))
 	end
@@ -93,6 +94,12 @@ dashboard_html = [[
 					text-overflow: ellipsis;
 					overflow:hidden; 
 				}
+
+				#user_name {
+					width: 50%;
+					text-overflow: ellipsis;
+					overflow: hidden;
+				}
 			</style>
 		</head>
         <body>	
@@ -101,7 +108,7 @@ dashboard_html = [[
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js" integrity="sha512-CryKbMe7sjSCDPl18jtJI5DR5jtkUWxPXWaLCst6QjH8wxDexfRJic2WRmRXmstr2Y8SxDDWuBO6CQC6IE4KTA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 			<div class="row" style="margin: 10px">
-				<div class="col-xs-3">
+				<div class="col-xs-4 col-lg-3">
 					<div class="input-group">
 						<div style="height: 20px;" class="input-group-addon"><i class="fa-solid fa-search fa-xs"></i></div>
 						<input id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
@@ -111,20 +118,28 @@ dashboard_html = [[
 
 					</ul>
 				</div>
-				<div class="col-xs-9">
+				<div class="col-xs-8 col-lg-9">
 					<div id="user_content_empty">
 						Please select an user.
 					</div>
 					<div class="tab-content" id="user_content" style="display: none;">
 						<h3 style="margin: 5px 0px 0px 0;">
-							<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
-								<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
-							</span>
-							<span class="label label-default" style="border-radius: 0 .25em .25em 0;">
-								<span id="user_content_username"></span>
-							</span>
-							<span id="user_memberships" class="pull-right">
-							</span>
+							<div class="row">
+								<div class="col-xs-9">
+									<span id="user_name">
+										<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
+											<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
+										</span>
+										<span class="label label-default" style="border-radius: 0 .25em .25em 0;">
+											<span id="user_content_username"></span>
+										</span>
+									</span>
+								</div>
+								<div class="col-xs-3">
+									<span id="user_memberships" class="pull-right">
+									</span>
+								</div>
+							</div>
 						</h3>
 
 						<hr/>
@@ -416,21 +431,19 @@ function VyHub.Dashboard:load_users(users_json)
 end
 
 concommand.Add("vh_dashboard", function ()
-	--if VyHub.Dashboard.ui == nil then
+	if VyHub.Dashboard.ui == nil or not VyHub.Dashboard.ui:IsValid() then
 		VyHub.Dashboard:create_ui()
-	--end
-	VyHub.Dashboard.ui:Show()
-	VyHub.Dashboard.ui:MakePopup()
+	end
+
+	if VyHub.Dashboard.ui != nil and VyHub.Dashboard.ui:IsValid() and VyHub.Dashboard.ui:IsVisible() then
+		VyHub.Dashboard.ui:Hide()
+	else
+		VyHub.Dashboard.ui:Show()
+		VyHub.Dashboard.ui:MakePopup()
+	end
 
 	net.Start("vyhub_dashboard")
 	net.SendToServer()
-
-	if VyHub.Dashboard.ui:IsVisible() then
-	--	VyHub.Dashboard.ui:Hide()
-	else
-	--	VyHub.Dashboard.ui:Show()
-	--	VyHub.Dashboard.ui:MakePopup()
-	end
 end)
 
 
@@ -458,7 +471,7 @@ end)
 
 
 net.Receive("vyhub_dashboard_reload", function()
-	if VyHub.Dashboard.ui:IsVisible() then
+	if VyHub.Dashboard.ui and VyHub.Dashboard.ui:IsVisible() then
 		MsgN("Reloading dashboard data, because server told us.")
 		net.Start("vyhub_dashboard")
 		net.SendToServer()
