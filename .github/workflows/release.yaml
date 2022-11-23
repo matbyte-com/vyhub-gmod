@@ -24,4 +24,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: '${{ github.ref_name }}'
           rm: true
+          snapshots: true
           files: ${{ github.event.repository.name }}-${{ github.ref_name }}.zip
