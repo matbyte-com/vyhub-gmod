@@ -36,6 +36,16 @@ function VyHub.Dashboard:get_data(steamid64, callback)
 end
 
 
+function VyHub.Dashboard:get_permissions(ply)
+    return {
+        warning_show = VyHub.Player:check_property(ply, 'warning_show'),
+        warning_edit = VyHub.Player:check_property(ply, 'warning_edit'),
+        warning_delete = VyHub.Player:check_property(ply, 'warning_delete'),
+        ban_show = VyHub.Player:check_property(ply, 'ban_show'),
+        ban_edit = VyHub.Player:check_property(ply, 'ban_edit'),
+    }
+end
+
 net.Receive("vyhub_dashboard", function(_, ply)
     if not IsValid(ply) then return end
 
@@ -43,10 +53,13 @@ net.Receive("vyhub_dashboard", function(_, ply)
         local users_json = json.encode(users)
         local users_json_compressed = util.Compress(users_json)
         local users_json_compressed_len = #users_json_compressed
+        local perms = VyHub.Dashboard:get_permissions(ply)
+        local perms_json = json.encode(perms)
 
         net.Start("vyhub_dashboard")
             net.WriteUInt(users_json_compressed_len, 16)
             net.WriteData(users_json_compressed, users_json_compressed_len)
+            net.WriteString(perms_json)
 	    net.Send(ply)
     end)
 end)

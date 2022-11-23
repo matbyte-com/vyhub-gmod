@@ -4,7 +4,6 @@ VyHub.Dashboard.ui = VyHub.Dashboard.ui or nil
 
 VyHub.Dashboard.html_ready = false
 
-
 local dashboard_html = nil
 
 function VyHub.Dashboard:create_ui()
@@ -33,6 +32,7 @@ function VyHub.Dashboard:create_ui()
 
 	function VyHub.Dashboard.ui_html:OnDocumentReady()
 		VyHub.Dashboard.html_ready = true
+		VyHub.Dashboard.ui_html:RunJavascript('local_steamid64 = ' .. LocalPlayer():SteamID64())
 	end
 
 	VyHub.Dashboard.ui_html:AddFunction("vyhub", "warning_toggle", function (warning_id)
@@ -146,7 +146,7 @@ dashboard_html = [[
 
 						<h4><span class="label label-default"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp;Warnings</span></h3>
 
-						<div class="row">
+						<div class="row perm-warning_edit">
 							<div class="col-xs-10">
 								<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="Reason" />
 							</div>
@@ -180,7 +180,7 @@ dashboard_html = [[
 						
 						<h4><span class="label label-default"><i class="fa-solid fa-gavel"></i> &nbsp;Bans</span></h3>
 
-						<div class="row">
+						<div class="row perm-ban_edit">
 							<div class="col-xs-8">
 								<input id="user_ban_reason" type="text" class="form-control vh-input" onclick="$('#user_ban_reason').val('');" placeholder="Reason" />
 							</div>
@@ -220,9 +220,11 @@ dashboard_html = [[
         </body>
 
 		<script>
+			var perms = null;
 			var users = [];
 			var users_by_id = {};
 			var current_user = null;
+			var local_steamid64 = null;
 
 			function escape(str) {
 				return $("<div>").text(str).html();
@@ -243,6 +245,24 @@ dashboard_html = [[
 				generate_user_list() 
 			}
 
+			function load_perms(new_perms) {
+				perms = new_perms;
+			}
+			
+			function enforce_perms() {
+				if (perms == null) { return; }
+
+				Object.keys(perms).forEach(function(perm) {
+					var has_perm = perms[perm];
+
+					if (has_perm) {
+						$('.perm-' + perm).show();
+					} else {
+						$('.perm-' + perm).hide();
+					}
+				});
+			}
+
 			function generate_user_list() {
 				$('#user_list').html('');
 
@@ -254,10 +274,13 @@ dashboard_html = [[
 
 				var ids = [];
 
+				var only_local_user = perms == null || (!perms.warning_show && !perms.ban_show);
+
 				users.forEach(function(user) {
 					var activity = user.activities[0];
 
 					if (activity == null) { return; }
+					if (only_local_user && user.identifier !== local_steamid64) { return; }
 
 					if (filter != null) {
 						if (activity.extra.Nickname.toLowerCase().indexOf(filter) == -1 && user.username.toLowerCase().indexOf(filter) == -1) {
@@ -335,8 +358,8 @@ dashboard_html = [[
 							<td>' + escape(warning.creator.username) + '</td> \
 							<td>' + format_date(warning.created_on) + '</td> \
 							<td class="text-right"> \
-								<button class="btn btn-default btn-xs" onclick="vyhub.warning_toggle(\'' + warning.id + '\')"><i class="fa-solid fa-play"></i><i class="fa-solid fa-pause"></i></button> \
-								<button class="btn btn-default btn-xs" onclick="vyhub.warning_delete(\'' + warning.id + '\')"><i class="fa-solid fa-trash"></i></button> \
+								<button class="btn btn-default btn-xs perm-warning_edit" onclick="vyhub.warning_toggle(\'' + warning.id + '\')"><i class="fa-solid fa-play"></i><i class="fa-solid fa-pause"></i></button> \
+								<button class="btn btn-default btn-xs perm-warning_delete" onclick="vyhub.warning_delete(\'' + warning.id + '\')"><i class="fa-solid fa-trash"></i></button> \
 							</td> \
 						</tr> \
 					');
@@ -363,9 +386,9 @@ dashboard_html = [[
 					var actions = "";
 
 					if (ban.status == "ACTIVE") {
-						actions += '<button class="btn btn-default btn-xs" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'UNBANNED\')"><i class="fa-solid fa-check"></i> &nbsp;Unban</button>';
+						actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'UNBANNED\')"><i class="fa-solid fa-check"></i> &nbsp;Unban</button>';
 					} else if (ban.status == "UNBANNED") {
-						actions += '<button class="btn btn-default btn-xs" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'ACTIVE\')"><i class="fa-solid fa-gavel"></i> &nbsp;Reban</button>';
+						actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'ACTIVE\')"><i class="fa-solid fa-gavel"></i> &nbsp;Reban</button>';
 					}
 
 					$('#user_content_bans').append(' \
@@ -387,6 +410,8 @@ dashboard_html = [[
 				});
 
 				$('#user_content').show();
+
+				enforce_perms();
 			}
 
 			function reload_current_user() {
@@ -430,16 +455,22 @@ function VyHub.Dashboard:load_users(users_json)
 	VyHub.Dashboard.ui_html:RunJavascript("reload_current_user();")
 end
 
+function VyHub.Dashboard:load_perms(perms_json) 
+	VyHub.Dashboard.ui_html:RunJavascript("load_perms(" .. perms_json .. ");")
+end
+
 concommand.Add("vh_dashboard", function ()
 	if VyHub.Dashboard.ui == nil or not VyHub.Dashboard.ui:IsValid() then
 		VyHub.Dashboard:create_ui()
-	end
-
-	if VyHub.Dashboard.ui != nil and VyHub.Dashboard.ui:IsValid() and VyHub.Dashboard.ui:IsVisible() then
-		VyHub.Dashboard.ui:Hide()
-	else
 		VyHub.Dashboard.ui:Show()
 		VyHub.Dashboard.ui:MakePopup()
+	else
+		if VyHub.Dashboard.ui != nil and VyHub.Dashboard.ui:IsValid() and VyHub.Dashboard.ui:IsVisible() then
+			VyHub.Dashboard.ui:Hide()
+		else
+			VyHub.Dashboard.ui:Show()
+			VyHub.Dashboard.ui:MakePopup()
+		end
 	end
 
 	net.Start("vyhub_dashboard")
@@ -450,9 +481,10 @@ end)
 net.Receive("vyhub_dashboard", function()
 	local data_length = net.ReadUInt(16)
 	local data_raw = net.ReadData(data_length)
+	local perms_json = net.ReadString()
 	local users_json = util.Decompress(data_raw)
 
-	MsgN("Received dashboard data: " .. users_json)
+	MsgN("Received perms data: " .. perms_json)
 
 	timer.Create("vyhub_dashboard_html_ready", 0.3, 20, function ()
 		if not VyHub.Dashboard.html_ready then
@@ -464,6 +496,7 @@ net.Receive("vyhub_dashboard", function()
 
 		MsgN("VyHub Dashboard: HTML Loaded")
 
+		VyHub.Dashboard:load_perms(perms_json)
 		VyHub.Dashboard:load_users(users_json)
 	end)
 end)
