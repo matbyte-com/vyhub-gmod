@@ -25,4 +25,4 @@ jobs:
           artifacts: ${{ github.event.repository.name }}-${{ github.ref_name }}.zip
           allowUpdates: true
           artifactErrorsFailBuild: true
-          bodyFile: ${{ github.event.repository.name }}/CHANGELOG.md
+          bodyFile: CHANGELOG.md
