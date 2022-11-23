@@ -16,7 +16,7 @@ jobs:
       - name: Create zip
         run: |
           cd ..
-          zip ${{ github.event.repository.name }}/${{ github.event.repository.name }}-${GITHUB_REF_NAME}.zip ${{ github.event.repository.name }} -r  -x "**/*/.git/*" -x "**/*/.github/*" -x "**/*/.git"
+          zip ${{ github.event.repository.name }}/${{ github.event.repository.name }}-${GITHUB_REF_NAME}.zip ${{ github.event.repository.name }} -r  -x "*/*/.git/*" -x "*/*/.github/*" -x "*/*/.git"
 
       - uses:  ncipollo/release-action@v1
         with:
