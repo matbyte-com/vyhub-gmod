@@ -79,6 +79,8 @@ if CLIENT then
         VyHub.lang = json.decode(util.Decompress(lang_compr))
 
         VyHub:msg("Loaded language.")
+        
+        hook.Run("vyhub_lang_loaded")
     end)
 
     hook.Add("Initialize", "vyhub_lang_Initialize", function ()

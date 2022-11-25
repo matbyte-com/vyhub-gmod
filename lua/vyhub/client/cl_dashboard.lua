@@ -3,8 +3,9 @@ VyHub.Dashboard = VyHub.Dashboard or {}
 VyHub.Dashboard.ui = VyHub.Dashboard.ui or nil
 
 VyHub.Dashboard.html_ready = false
+VyHub.Dashboard.html_generated = VyHub.Dashboard.html_generated or false
 
-local dashboard_html = nil
+local dashboard_html = dashboard_html or "Loading, please try again."
 
 function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.html_ready = false
@@ -52,402 +53,400 @@ function VyHub.Dashboard:create_ui()
 	end)
 end
 
+function VyHub.Dashboard:load_html()
+	VyHub.Dashboard.html_generated = true
+	dashboard_html = [[
+		<html>
+			<head>
+				<meta charset="utf-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1">
 
-dashboard_html = [[
-    <html>
-		<head>
-			<meta charset="utf-8">
-    		<meta name="viewport" content="width=device-width, initial-scale=1">
+				<style>@import url("https://fonts.googleapis.com/css?family=Lato:400,700,400italic");</style>
+				<style>]] .. VyHub.CSS.bootstrap3 .. [[</style>
+				<style>]] .. VyHub.CSS.fontawesome6 .. [[</style>
+				<style>]] .. VyHub.CSS.fontawesome6_solid .. [[</style>
 
-			<!-- Botstrap CSS -->
-			<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"> -->
-			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@3.4.1/darkly/bootstrap.min.css" integrity="sha384-nNK9n28pDUDDgIiIqZ/MiyO3F4/9vsMtReZK39klb/MtkZI3/LtjSjlmyVPS3KdN" crossorigin="anonymous">	
-			<!-- FA -->
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/solid.min.css" integrity="sha512-uj2QCZdpo8PSbRGL/g5mXek6HM/APd7k/B5Hx/rkVFPNOxAQMXD+t+bG4Zv8OAdUpydZTU3UHmyjjiHv2Ww0PA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/fontawesome.min.css" integrity="sha512-RvQxwf+3zJuNwl4e0sZjQeX7kUa3o82bDETpgVCH2RiwYSZVDdFJ7N/woNigN/ldyOOoKw8584jM4plQdt8bhA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+				<style>
+					::selection {
+						background: #b5b5b5; /* WebKit/Blink Browsers */
+					}
 
-			<style>
-				::selection {
-					background: #b5b5b5; /* WebKit/Blink Browsers */
-				}
+					body{
+						overflow-x: hidden;
+						overflow-y: scroll;
+					}
 
-				body{
-					overflow-x: hidden;
-					overflow-y: scroll;
-				}
+					.vh-input {
+						background-color: #303030; 
+						color: white; 
+						height: 30px;
+					}
 
-				.vh-input {
-					background-color: #303030; 
-					color: white; 
-					height: 30px;
-				}
+					.nav-pills .active {
+						background-color: #303030;
+						font-weight: bold;
+						margin-left: 4px;
+					}
 
-				.nav-pills .active {
-					background-color: #303030;
-					font-weight: bold;
-					margin-left: 4px;
-				}
+					.user-tab {
+						padding: 3px 6px 3px 6px;
+						border-radius: 8px;
+						text-overflow: ellipsis;
+						overflow:hidden; 
+					}
 
-				.user-tab {
-					padding: 3px 6px 3px 6px;
-					border-radius: 8px;
-					text-overflow: ellipsis;
-					overflow:hidden; 
-				}
-
-				#user_name {
-					width: 50%;
-					text-overflow: ellipsis;
-					overflow: hidden;
-				}
-			</style>
-		</head>
-        <body>	
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js" integrity="sha512-CryKbMe7sjSCDPl18jtJI5DR5jtkUWxPXWaLCst6QjH8wxDexfRJic2WRmRXmstr2Y8SxDDWuBO6CQC6IE4KTA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-			<div class="row" style="margin: 10px">
-				<div class="col-xs-4 col-lg-3">
-					<div class="input-group">
-						<div style="height: 20px;" class="input-group-addon"><i class="fa-solid fa-search fa-xs"></i></div>
-						<input id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
-					</div>
-					<br/>
-					<ul class="nav nav-pills nav-stacked" id="user_list">
-
-					</ul>
-				</div>
-				<div class="col-xs-8 col-lg-9">
-					<div id="user_content_empty">
-						Please select an user.
-					</div>
-					<div class="tab-content" id="user_content" style="display: none;">
-						<h3 style="margin: 5px 0px 0px 0;">
-							<div class="row">
-								<div class="col-xs-9">
-									<span id="user_name">
-										<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
-											<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
-										</span>
-										<span class="label label-default" style="border-radius: 0 .25em .25em 0;">
-											<span id="user_content_username"></span>
-										</span>
-									</span>
-								</div>
-								<div class="col-xs-3">
-									<span id="user_memberships" class="pull-right">
-									</span>
-								</div>
-							</div>
-						</h3>
-
-						<hr/>
-
-						<h4><span class="label label-default"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp;Warnings</span></h3>
-
-						<div class="row perm-warning_edit">
-							<div class="col-xs-10">
-								<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="Reason" />
-							</div>
-							<div class="col-xs-2" style="padding-left: 0;">
-								<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Warn</button>
-							</div>
+					#user_name {
+						width: 50%;
+						text-overflow: ellipsis;
+						overflow: hidden;
+					}
+				</style>
+			</head>
+			<body>	
+				<div class="row" style="margin: 10px">
+					<div class="col-xs-4 col-lg-3">
+						<div class="input-group">
+							<div style="height: 20px;" class="input-group-addon"><i class="fa-solid fa-search fa-xs"></i></div>
+							<input id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
 						</div>
-
 						<br/>
+						<ul class="nav nav-pills nav-stacked" id="user_list">
 
-						<table class="table table-condensed table-hover">
-							<tr>
-								<th width="10px"></th>
-								<th>Reason</th>
-								<th>Admin</th>
-								<th>Date</th>
-								<th class="text-right">Actions</th>
-							</tr>
-
-							<tbody id="user_content_warnings">
-							</tbody>
-						</table>
-
-						<div>
-							<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; Active</span>
-							<span class="label label-warning"><i class="fa-solid fa-hourglass"></i>&nbsp; Inactive</span>
-							<span class="label label-default"><i class="fa-solid fa-times"></i>&nbsp; Disabled</span>
+						</ul>
+					</div>
+					<div class="col-xs-8 col-lg-9">
+						<div id="user_content_empty">
+							]] .. VyHub.lang.dashboard.select_user .. [[
 						</div>
+						<div class="tab-content" id="user_content" style="display: none;">
+							<h3 style="margin: 5px 0px 0px 0;">
+								<div class="row">
+									<div class="col-xs-9">
+										<span id="user_name">
+											<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
+												<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
+											</span>
+											<span class="label label-default" style="border-radius: 0 .25em .25em 0;">
+												<span id="user_content_username"></span>
+											</span>
+										</span>
+									</div>
+									<div class="col-xs-3">
+										<span id="user_memberships" class="pull-right">
+										</span>
+									</div>
+								</div>
+							</h3>
 
-						<hr />
-						
-						<h4><span class="label label-default"><i class="fa-solid fa-gavel"></i> &nbsp;Bans</span></h3>
+							<hr/>
 
-						<div class="row perm-ban_edit">
-							<div class="col-xs-8">
-								<input id="user_ban_reason" type="text" class="form-control vh-input" onclick="$('#user_ban_reason').val('');" placeholder="Reason" />
+							<h4><span class="label label-default"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp;]] .. VyHub.lang.other.warnings .. [[</span></h3>
+
+							<div class="row perm-warning_edit">
+								<div class="col-xs-10">
+									<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="]] .. VyHub.lang.other.reason .. [[" />
+								</div>
+								<div class="col-xs-2" style="padding-left: 0;">
+									<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; ]] .. VyHub.lang.dashboard.action_warn .. [[</button>
+								</div>
 							</div>
-							<div class="col-xs-2" style="padding-left: 0;">
-								<input id="user_ban_minutes" type="text" class="form-control vh-input" onclick="$('#user_ban_minutes').val('');" placeholder="Minutes" />
+
+							<br/>
+
+							<table class="table table-condensed table-hover">
+								<tr>
+									<th width="10px"></th>
+									<th>]] .. VyHub.lang.other.reason .. [[</th>
+									<th>]] .. VyHub.lang.other.admin .. [[</th>
+									<th>]] .. VyHub.lang.other.date .. [[</th>
+									<th class="text-right">]] .. VyHub.lang.other.actions .. [[</th>
+								</tr>
+
+								<tbody id="user_content_warnings">
+								</tbody>
+							</table>
+
+							<div>
+								<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; ]] .. VyHub.lang.other.active .. [[</span>
+								<span class="label label-warning"><i class="fa-solid fa-hourglass"></i>&nbsp; ]] .. VyHub.lang.other.inactive .. [[</span>
+								<span class="label label-default"><i class="fa-solid fa-times"></i>&nbsp; ]] .. VyHub.lang.other.disabled .. [[</span>
 							</div>
-							<div class="col-xs-2" style="padding-left: 0;">
-								<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa-solid fa-gavel"></i> &nbsp; Ban</button>
+
+							<hr />
+							
+							<h4><span class="label label-default"><i class="fa-solid fa-gavel"></i> &nbsp;]] .. VyHub.lang.other.bans .. [[</span></h3>
+
+							<div class="row perm-ban_edit">
+								<div class="col-xs-8">
+									<input id="user_ban_reason" type="text" class="form-control vh-input" onclick="$('#user_ban_reason').val('');" placeholder="]] .. VyHub.lang.other.reason .. [[" />
+								</div>
+								<div class="col-xs-2" style="padding-left: 0;">
+									<input id="user_ban_minutes" type="text" class="form-control vh-input" onclick="$('#user_ban_minutes').val('');" placeholder="]] .. VyHub.lang.other.minutes .. [[" />
+								</div>
+								<div class="col-xs-2" style="padding-left: 0;">
+									<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa-solid fa-gavel"></i> &nbsp; ]] .. VyHub.lang.dashboard.action_ban .. [[</button>
+								</div>
 							</div>
-						</div>
 
-						<br/>
+							<br/>
 
-						<table class="table table-condensed table-hover">
-							<tr>
-								<th width="10px"></th>
-								<th>Reason</th>
-								<th>Admin</th>
-								<th>Date</th>
-								<th>Minutes</th>
-								<th class="text-right">Actions</th>
-							</tr>
+							<table class="table table-condensed table-hover">
+								<tr>
+									<th width="10px"></th>
+									<th>]] .. VyHub.lang.other.reason .. [[</th>
+									<th>]] .. VyHub.lang.other.admin .. [[</th>
+									<th>]] .. VyHub.lang.other.date .. [[</th>
+									<th>]] .. VyHub.lang.other.minutes .. [[</th>
+									<th class="text-right">]] .. VyHub.lang.other.actions .. [[</th>
+								</tr>
 
-							<tbody id="user_content_bans">
-							</tbody>
-						</table>
+								<tbody id="user_content_bans">
+								</tbody>
+							</table>
 
-						<div>
-							<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; Active</span>
-							<span class="label label-info"><i class="fa-solid fa-globe"></i>&nbsp; Active (Global)</span>
-							<span class="label label-warning"><i class="fa-solid fa-times"></i>&nbsp; Unbanned</span>
-							<span class="label label-danger"><i class="fa-solid fa-hourglass"></i>&nbsp; Inactive</span>
+							<div>
+								<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; ]] .. VyHub.lang.other.active .. [[</span>
+								<span class="label label-info"><i class="fa-solid fa-globe"></i>&nbsp; ]] .. VyHub.lang.other.active_global .. [[</span>
+								<span class="label label-warning"><i class="fa-solid fa-times"></i>&nbsp; ]] .. VyHub.lang.other.unbanned .. [[</span>
+								<span class="label label-danger"><i class="fa-solid fa-hourglass"></i>&nbsp; ]] .. VyHub.lang.other.inactive .. [[</span>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-        </body>
+			</body>
 
-		<script>
-			var perms = null;
-			var users = [];
-			var users_by_id = {};
-			var current_user = null;
-			var local_steamid64 = null;
+			<script>]] .. VyHub.JS.jquery2 .. [[</script>
+			<script>]] .. VyHub.JS.moment .. [[</script>
+			<script>
+				var perms = null;
+				var users = [];
+				var users_by_id = {};
+				var current_user = null;
+				var local_steamid64 = null;
 
-			function escape(str) {
-				return $("<div>").text(str).html();
-			}
+				function escape(str) {
+					return $("<div>").text(str).html();
+				}
 
-			function format_date(iso_str) {
-				return moment(iso_str).format('YYYY-MM-DD HH:mm');
-			}
+				function format_date(iso_str) {
+					return moment(iso_str).format('YYYY-MM-DD HH:mm');
+				}
 
-			function load_data(new_data) {
-				users = new_data;
-				users_by_id = {};
+				function load_data(new_data) {
+					users = new_data;
+					users_by_id = {};
+					
+					new_data.forEach(function(user) {
+						users_by_id[user.id] = user;
+					});
+
+					generate_user_list() 
+				}
+
+				function load_perms(new_perms) {
+					perms = new_perms;
+				}
 				
-				new_data.forEach(function(user) {
-					users_by_id[user.id] = user;
-				});
+				function enforce_perms() {
+					if (perms == null) { return; }
 
-				generate_user_list() 
-			}
+					Object.keys(perms).forEach(function(perm) {
+						var has_perm = perms[perm];
 
-			function load_perms(new_perms) {
-				perms = new_perms;
-			}
-			
-			function enforce_perms() {
-				if (perms == null) { return; }
-
-				Object.keys(perms).forEach(function(perm) {
-					var has_perm = perms[perm];
-
-					if (has_perm) {
-						$('.perm-' + perm).show();
-					} else {
-						$('.perm-' + perm).hide();
-					}
-				});
-			}
-
-			function generate_user_list() {
-				$('#user_list').html('');
-
-				var filter = null;
-
-				if ($('#user_search').val()) {
-					filter = $('#user_search').val().toLowerCase();
-				}
-
-				var ids = [];
-
-				var only_local_user = perms == null || (!perms.warning_show && !perms.ban_show);
-
-				users.forEach(function(user) {
-					var activity = user.activities[0];
-
-					if (activity == null) { return; }
-					if (only_local_user && user.identifier !== local_steamid64) { return; }
-
-					if (filter != null) {
-						if (activity.extra.Nickname.toLowerCase().indexOf(filter) == -1 && user.username.toLowerCase().indexOf(filter) == -1) {
-							return;
+						if (has_perm) {
+							$('.perm-' + perm).show();
+						} else {
+							$('.perm-' + perm).hide();
 						}
+					});
+				}
+
+				function generate_user_list() {
+					$('#user_list').html('');
+
+					var filter = null;
+
+					if ($('#user_search').val()) {
+						filter = $('#user_search').val().toLowerCase();
 					}
 
-					var color = 'white';
-					if (user.memberships.length > 0) {
-						color = user.memberships[0].group.color;
+					var ids = [];
+
+					var only_local_user = perms == null || (!perms.warning_show && !perms.ban_show);
+
+					users.forEach(function(user) {
+						var activity = user.activities[0];
+
+						if (activity == null) { return; }
+						if (only_local_user && user.identifier !== local_steamid64) { return; }
+
+						if (filter != null) {
+							if (activity.extra.Nickname.toLowerCase().indexOf(filter) == -1 && user.username.toLowerCase().indexOf(filter) == -1) {
+								return;
+							}
+						}
+
+						var color = 'white';
+						if (user.memberships.length > 0) {
+							color = user.memberships[0].group.color;
+						}
+
+						var warn_badge_color = ((user.warnings.length == 0) ? '#444' : "#f0ad4e");
+						var ban_badge_color = ((user.bans.length == 0) ? '#444' : "#d9534f");
+
+						$('#user_list').append(' \
+						<li class="user-tab" id="user_tab_' + user.id + '" onclick="generate_user_overview(\'' + user.id + '\')" style="cursor:pointer; color: ' + color + ';"> \
+							' + escape(activity.extra.Nickname) + ' \
+							<span class="badge pull-right" style="background-color: ' + ban_badge_color + ';">' + user.bans.length + ' <i class="fa-solid fa-gavel"></i></span> \
+							<span class="badge pull-right" style="background-color: ' + warn_badge_color + '; margin-left: 3px; margin-right: 3px;">' + user.warnings.length + ' <i class="fa-solid fa-triangle-exclamation"></i></span> \
+						</li> \
+						');
+
+						ids.push(user.id);
+					});
+
+					if (ids.length == 1) {
+						generate_user_overview(ids[0]);
+					} else if (ids.length == 0) {
+						$('#user_content_empty').show();
+						$('#user_content').hide();
 					}
+				}
 
-					var warn_badge_color = ((user.warnings.length == 0) ? '#444' : "#f0ad4e");
-					var ban_badge_color = ((user.bans.length == 0) ? '#444' : "#d9534f");
+				function generate_user_overview(user_id) {
+					current_user = null;
 
-					$('#user_list').append(' \
-					<li class="user-tab" id="user_tab_' + user.id + '" onclick="generate_user_overview(\'' + user.id + '\')" style="cursor:pointer; color: ' + color + ';"> \
-						' + escape(activity.extra.Nickname) + ' \
-						<span class="badge pull-right" style="background-color: ' + ban_badge_color + ';">' + user.bans.length + ' <i class="fa-solid fa-gavel"></i></span> \
-						<span class="badge pull-right" style="background-color: ' + warn_badge_color + '; margin-left: 3px; margin-right: 3px;">' + user.warnings.length + ' <i class="fa-solid fa-triangle-exclamation"></i></span> \
-					</li> \
-					');
-
-					ids.push(user.id);
-				});
-
-				if (ids.length == 1) {
-					generate_user_overview(ids[0]);
-				} else if (ids.length == 0) {
-					$('#user_content_empty').show();
+					$('#user_content_empty').hide();
 					$('#user_content').hide();
-				}
-			}
 
-			function generate_user_overview(user_id) {
-				current_user = null;
+					var user = users_by_id[user_id];
+					if (user == null) {	return; }
 
-				$('#user_content_empty').hide();
-				$('#user_content').hide();
+					var activity = user.activities[0];
+					if (activity == null) { return; }
 
-				var user = users_by_id[user_id];
-				if (user == null) {	return; }
+					current_user = user;
 
-				var activity = user.activities[0];
-				if (activity == null) { return; }
+					$('#user_content_name').text(activity.extra.Nickname);
+					$('#user_content_username').text(user.username);
 
-				current_user = user;
-
-				$('#user_content_name').text(activity.extra.Nickname);
-				$('#user_content_username').text(user.username);
-
-				if (activity.extra.Nickname === user.username) {
-					$('#user_content_username').hide();
-				} else {
-					$('#user_content_username').show();
-				}
-
-				$('.user-tab').removeClass("active");
-				$('#user_tab_' + user_id).addClass("active");
-
-				$('#user_content_warnings').html('');
-				user.warnings.forEach(function(warning) {
-					var row_class = "success";
-
-					if (warning.disabled) {
-						row_class = "active";
-					} else if (!warning.active) {
-						row_class = "warning";
+					if (activity.extra.Nickname === user.username) {
+						$('#user_content_username').hide();
+					} else {
+						$('#user_content_username').show();
 					}
 
-					$('#user_content_warnings').append(' \
-						<tr> \
-							<td class="' + row_class + '"></td> \
-							<td>' + escape(warning.reason) + '</td> \
-							<td>' + escape(warning.creator.username) + '</td> \
-							<td>' + format_date(warning.created_on) + '</td> \
-							<td class="text-right"> \
-								<button class="btn btn-default btn-xs perm-warning_edit" onclick="vyhub.warning_toggle(\'' + warning.id + '\')"><i class="fa-solid fa-play"></i><i class="fa-solid fa-pause"></i></button> \
-								<button class="btn btn-default btn-xs perm-warning_delete" onclick="vyhub.warning_delete(\'' + warning.id + '\')"><i class="fa-solid fa-trash"></i></button> \
-							</td> \
-						</tr> \
-					');
-				});
+					$('.user-tab').removeClass("active");
+					$('#user_tab_' + user_id).addClass("active");
 
-				$('#user_content_bans').html('');
-				user.bans.forEach(function(ban) {
-					var minutes = '∞';
+					$('#user_content_warnings').html('');
+					user.warnings.forEach(function(warning) {
+						var row_class = "success";
 
-					if (ban.length != null) {
-						minutes = Math.round(ban.length/60);
-					}
+						if (warning.disabled) {
+							row_class = "active";
+						} else if (!warning.active) {
+							row_class = "warning";
+						}
 
-					var row_class = "success";
+						$('#user_content_warnings').append(' \
+							<tr> \
+								<td class="' + row_class + '"></td> \
+								<td>' + escape(warning.reason) + '</td> \
+								<td>' + escape(warning.creator.username) + '</td> \
+								<td>' + format_date(warning.created_on) + '</td> \
+								<td class="text-right"> \
+									<button class="btn btn-default btn-xs perm-warning_edit" onclick="vyhub.warning_toggle(\'' + warning.id + '\')"><i class="fa-solid fa-play"></i><i class="fa-solid fa-pause"></i></button> \
+									<button class="btn btn-default btn-xs perm-warning_delete" onclick="vyhub.warning_delete(\'' + warning.id + '\')"><i class="fa-solid fa-trash"></i></button> \
+								</td> \
+							</tr> \
+						');
+					});
 
-					if (ban.status == "UNBANNED") {
-						row_class = "warning";
-					} else if (!ban.active) {
-						row_class = "danger";
-					} else if (ban.serverbundle == null) {
-						row_class = "info";
-					}
+					$('#user_content_bans').html('');
+					user.bans.forEach(function(ban) {
+						var minutes = '∞';
 
-					var actions = "";
+						if (ban.length != null) {
+							minutes = Math.round(ban.length/60);
+						}
 
-					if (ban.status == "ACTIVE") {
-						actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'UNBANNED\')"><i class="fa-solid fa-check"></i> &nbsp;Unban</button>';
-					} else if (ban.status == "UNBANNED") {
-						actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'ACTIVE\')"><i class="fa-solid fa-gavel"></i> &nbsp;Reban</button>';
-					}
+						var row_class = "success";
 
-					$('#user_content_bans').append(' \
-						<tr> \
-							<td class="' + row_class + '"></td> \
-							<td>' + escape(ban.reason) + '</td> \
-							<td>' + escape(ban.creator.username) + '</td> \
-							<td>' + format_date(ban.created_on) + '</td> \
-							<td>' + minutes + '</td> \
-							<td class="text-right">' + actions + '</td> \
-						</tr> \
-					');
-				});
+						if (ban.status == "UNBANNED") {
+							row_class = "warning";
+						} else if (!ban.active) {
+							row_class = "danger";
+						} else if (ban.serverbundle == null) {
+							row_class = "info";
+						}
 
-				$('#user_memberships').html('');
+						var actions = "";
 
-				user.memberships.forEach(function(membership) {
-					$('#user_memberships').append('<span class="label label-default" style="background-color: ' + membership.group.color + ';">' + membership.group.name + '</span>');
-				});
+						if (ban.status == "ACTIVE") {
+							actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'UNBANNED\')"><i class="fa-solid fa-check"></i> &nbsp;]] .. VyHub.lang.other.unban .. [[</button>';
+						} else if (ban.status == "UNBANNED") {
+							actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'ACTIVE\')"><i class="fa-solid fa-gavel"></i> &nbsp;]] .. VyHub.lang.other.reban .. [[</button>';
+						}
 
-				$('#user_content').show();
+						$('#user_content_bans').append(' \
+							<tr> \
+								<td class="' + row_class + '"></td> \
+								<td>' + escape(ban.reason) + '</td> \
+								<td>' + escape(ban.creator.username) + '</td> \
+								<td>' + format_date(ban.created_on) + '</td> \
+								<td>' + minutes + '</td> \
+								<td class="text-right">' + actions + '</td> \
+							</tr> \
+						');
+					});
 
-				enforce_perms();
-			}
+					$('#user_memberships').html('');
 
-			function reload_current_user() {
-				if (current_user != null) {
-					generate_user_overview(current_user.id);
-				}
-			}
+					user.memberships.forEach(function(membership) {
+						$('#user_memberships').append('<span class="label label-default" style="background-color: ' + membership.group.color + ';">' + membership.group.name + '</span>');
+					});
 
-			function create_warning() {
-				if (current_user == null) {
-					return;
-				}
+					$('#user_content').show();
 
-				var reason = $('#user_warn').val();
-
-				vyhub.warning_create(current_user.identifier, reason);
-
-				$('#user_warn').val('');
-			}
-
-			function create_ban() {
-				if (current_user == null) {
-					return;
+					enforce_perms();
 				}
 
-				var reason = $('#user_ban_reason').val();
-				var minutes = $('#user_ban_minutes').val();
+				function reload_current_user() {
+					if (current_user != null) {
+						generate_user_overview(current_user.id);
+					}
+				}
 
-				vyhub.ban_create(current_user.identifier, minutes, reason);
+				function create_warning() {
+					if (current_user == null) {
+						return;
+					}
 
-				$('#user_ban_reason').val('');
-				$('#user_ban_minutes').val('');
-			}
-		</script>
-    </html>
-]]
+					var reason = $('#user_warn').val();
+
+					vyhub.warning_create(current_user.identifier, reason);
+
+					$('#user_warn').val('');
+				}
+
+				function create_ban() {
+					if (current_user == null) {
+						return;
+					}
+
+					var reason = $('#user_ban_reason').val();
+					var minutes = $('#user_ban_minutes').val();
+
+					vyhub.ban_create(current_user.identifier, minutes, reason);
+
+					$('#user_ban_reason').val('');
+					$('#user_ban_minutes').val('');
+				}
+			</script>
+		</html>
+	]]
+end
 
 
 function VyHub.Dashboard:load_users(users_json) 
@@ -486,8 +485,6 @@ net.Receive("vyhub_dashboard", function()
 	local perms_json = net.ReadString()
 	local users_json = util.Decompress(data_raw)
 
-	MsgN("Received perms data: " .. perms_json)
-
 	timer.Create("vyhub_dashboard_html_ready", 0.3, 20, function ()
 		if not VyHub.Dashboard.html_ready then
 			MsgN("VyHub Dashboard: Waiting for HTML to load.")
@@ -504,7 +501,6 @@ net.Receive("vyhub_dashboard", function()
 end)
 
 
-
 net.Receive("vyhub_dashboard_reload", function()
 	if VyHub.Dashboard.ui and VyHub.Dashboard.ui:IsVisible() then
 		MsgN("Reloading dashboard data, because server told us.")
@@ -512,3 +508,12 @@ net.Receive("vyhub_dashboard_reload", function()
 		net.SendToServer()
 	end
 end)
+
+hook.Add("vyhub_lang_loaded", "vyhub_dashboard_vyhub_lang_loaded", function ()
+	VyHub.Dashboard:load_html()
+end)
+
+if VyHub.Dashboard.html_generated then
+	VyHub.Dashboard:load_html()
+end
+
