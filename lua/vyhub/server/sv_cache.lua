@@ -21,7 +21,17 @@ function VyHub.Cache:get(key, max_age)
         return nil
     end
 
-    local data = json.decode(file.Read(path, "data"))
+    local data_str = file.Read(path, "data")
+
+    if not string.Trim(data_str) then
+        return nil
+    end
+
+    local success, data = pcall(json.decode, data_str)
+
+    if not success then
+        return nil
+    end
 
     if istable(data) and data.timestamp and data.data then
         if max_age != nil and os.time() - data.timestamp > max_age then
