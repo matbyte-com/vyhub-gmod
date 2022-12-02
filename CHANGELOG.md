@@ -1,3 +1,1 @@
-- Fix dashboard not loading on some computers
-- Make dashboard load faster
-- Add german translation
+- Fix warning reason not correctly transmitted when using the in-game dashboard
