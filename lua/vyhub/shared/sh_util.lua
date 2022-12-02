@@ -213,3 +213,9 @@ function VyHub.Util:invalid_str(str_list)
 
 	return false
 end
+
+function VyHub.Util:escape_concommand_str(str)
+	str = string.Replace(str, '"', "'")
+
+	return str
+end
