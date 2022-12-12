@@ -49,7 +49,7 @@ function VyHub.Dashboard:create_ui()
 		LocalPlayer():ConCommand(f('vh_warn %s "%s"', steamid, VyHub.Util:escape_concommand_str(reason)))
 	end)
 	VyHub.Dashboard.ui_html:AddFunction("vyhub", "ban_create", function (steamid, minutes, reason)
-		LocalPlayer():ConCommand(f('vh_ban %s %s "%s"', steamid, minutes, VyHub.Util:escape_concommand_str(reason)))
+		LocalPlayer():ConCommand(f('vh_ban %s "%s" "%s"', steamid, minutes, VyHub.Util:escape_concommand_str(reason)))
 	end)
 end
 
