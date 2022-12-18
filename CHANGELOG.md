@@ -1,1 +1,2 @@
-- Fix warning reason not correctly transmitted when using the in-game dashboard
+- Improve some console messages
+- Fix problems with `ply:SetUserGroup` (relevant if no admin addon is used)
