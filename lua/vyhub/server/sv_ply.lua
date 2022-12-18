@@ -161,9 +161,7 @@ function VyHub.Player:check_group(ply, callback)
             elseif xAdmin and xAdmin.Admin.RegisterBan then
                 xAdmin.SetGroup(ply, group, true)
             else
-                if ply.isFullyAuthenticated and ply:IsFullyAuthenticated() then
-                    ply:SetUserGroup(group, true)
-                end
+                ply:SetUserGroup(group, true)
             end
             
             VyHub:msg("Added " .. ply:Nick() .. " to group " .. group, "success")
