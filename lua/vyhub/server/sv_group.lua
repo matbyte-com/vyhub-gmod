@@ -3,6 +3,7 @@ VyHub.Group = VyHub.Group or {}
 
 VyHub.groups = VyHub.groups or nil
 VyHub.groups_mapped = VyHub.groups_mapped or nil
+VyHub.Group.group_changes = VyHub.Group.group_changes or {} -- dict(steamid64, groupname) of the last in-game group change (VyHub -> GMOD). Used to prevent loop.
 
 util.AddNetworkString("vyhub_group_data")
 
@@ -85,7 +86,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
             group_id = group.id,
             serverbundle_id = VyHub.server.serverbundle.id
         }, function (code, result)
-            VyHub:msg(f("Added %s to group %s.", steamid, groupname), "success")
+            VyHub:msg(f("Added membership in group %s for user %s.", groupname, steamid), "success")
 
             local ply = player.GetBySteamID64(steamid)
 
@@ -97,7 +98,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
                 callback(true)
             end
         end, function (code, reason)
-            VyHub:msg(f("Could not add %s to group %s.", steamid, groupname), "error")
+            VyHub:msg(f("Could not add membership in group %s for user %s.", groupname, steamid), "error")
             if callback then
                 callback(false)
             end
@@ -174,9 +175,18 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 	local _setusergroup = meta_ply.SetUserGroup
 
 	if not ULib and not serverguard and not sam and not (xAdmin and xAdmin.Admin.RegisterBan) then
+        hook.Remove("PlayerInitialSpawn", "PlayerAuthSpawn")
+
 		meta_ply.SetUserGroup = function(ply, name, ignore_vh)
-			if not ignore_vh then
-				if VyHub.Group:set(ply:SteamID64(), name) or VyHub.Config.disable_group_check then
+            if ply:GetUserGroup() == name then
+                print(ply:SteamID64() .. " already in group " .. name .. ". Ignoring change...")
+                return 
+            end
+
+            local steamid = ply:SteamID64()
+
+			if not ignore_vh and VyHub.Group.group_changes[steamid] != name then
+				if VyHub.Group:set(steamid, name) or VyHub.Config.disable_group_check then
 					_setusergroup(ply, name)
 				end
 			else

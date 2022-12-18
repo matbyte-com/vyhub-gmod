@@ -150,6 +150,8 @@ function VyHub.Player:check_group(ply, callback)
         curr_group = ply:GetUserGroup()
 
         if curr_group != group then
+            VyHub.Group.group_changes[ply:SteamID64()] = group
+
             if serverguard then
                 serverguard.player:SetRank(ply, group, false, true)
             elseif ulx then
@@ -159,7 +161,9 @@ function VyHub.Player:check_group(ply, callback)
             elseif xAdmin and xAdmin.Admin.RegisterBan then
                 xAdmin.SetGroup(ply, group, true)
             else
-                ply:SetUserGroup(group, true)
+                if ply.isFullyAuthenticated and ply:IsFullyAuthenticated() then
+                    ply:SetUserGroup(group, true)
+                end
             end
             
             VyHub:msg("Added " .. ply:Nick() .. " to group " .. group, "success")
