@@ -61,17 +61,47 @@ function VyHub.Player:initialize(ply, retry)
     end, { 404 })
 end
 
+local creation_began = {}
+local creation_success = {}
+local creation_err = {}
+
 function VyHub.Player:create(steamid, success, err)
+    -- Creation can take longer. If multiple creation requests occur, merge them to one.
+    if not istable(creation_success[steamid]) then creation_success[steamid] = {} end
+    if not istable(creation_err[steamid]) then creation_err[steamid] = {} end
+
+    table.insert(creation_success[steamid], success)
+    table.insert(creation_err[steamid], err)
+
+    if creation_began[steamid] and os.time() - creation_began[steamid] < 10 then
+        VyHub:msg(f("Queued creation request for steamid %s", steamid), "debug")
+        return
+    end
+
     VyHub:msg(string.format("No existing user found for steam id %s. Creating..", steamid))
 
+    creation_began[steamid] = os.time()
+
+    local function reset_queue()
+        creation_began[steamid] = 0
+        creation_success[steamid] = {}
+        creation_err[steamid] = {}
+    end
+
     VyHub.API:post('/user/', nil, { identifier = steamid, type = 'STEAM' }, function()
-        if success then
-            success()
+        for _, success_callback in pairs(creation_success[steamid]) do
+            if success_callback then
+                success_callback()
+            end
         end
+        reset_queue()
     end, function()
-        if err then
-            err()
+        for _, err_callback in pairs(creation_err[steamid]) do
+            if err_callback then
+                err_callback()
+            end
         end
+        reset_queue()
     end)
 end
 
@@ -109,7 +139,7 @@ function VyHub.Player:get(steamid, callback, retry)
             else
                 callback(nil)
             end
-        end)
+        end, {404})
     end
 end
 
@@ -120,6 +150,8 @@ function VyHub.Player:check_group(ply, callback)
     end
 
     VyHub.API:get("/user/%s/group", {ply:VyHubID()}, { serverbundle_id = VyHub.server.serverbundle_id }, function(code, result)
+        if not IsValid(ply) then return end
+
         local highest = nil
 
         for _, group in pairs(result) do
