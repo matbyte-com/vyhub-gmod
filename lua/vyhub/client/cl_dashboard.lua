@@ -32,6 +32,7 @@ function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.ui_html:SetHTML(dashboard_html)
 
 	function VyHub.Dashboard.ui_html:OnDocumentReady()
+		MsgN("VyHub Dashboard: HTML Loaded")
 		VyHub.Dashboard.html_ready = true
 		VyHub.Dashboard.ui_html:RunJavascript('local_steamid64 = ' .. LocalPlayer():SteamID64())
 	end
@@ -61,10 +62,9 @@ function VyHub.Dashboard:load_html()
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
 
-				<style>@import url("https://fonts.googleapis.com/css?family=Lato:400,700,400italic");</style>
-				<style>]] .. VyHub.CSS.bootstrap3 .. [[</style>
-				<style>]] .. VyHub.CSS.fontawesome6 .. [[</style>
-				<style>]] .. VyHub.CSS.fontawesome6_solid .. [[</style>
+				<link rel="stylesheet" href="https://cdn.vyhub.net/assets/roboto-v30-latin/roboto-v30-latin.css">
+				<link rel="stylesheet" href="https://cdn.vyhub.net/assets/font-awesome-4.7.0/css/font-awesome.min.css">
+				<link rel="stylesheet" href="https://cdn.vyhub.net/assets/bootswatch-darkly.min.css">
 
 				<style>
 					::selection {
@@ -74,6 +74,7 @@ function VyHub.Dashboard:load_html()
 					body{
 						overflow-x: hidden;
 						overflow-y: scroll;
+						font-family: Roboto !important;
 					}
 
 					.vh-input {
@@ -106,8 +107,8 @@ function VyHub.Dashboard:load_html()
 				<div class="row" style="margin: 10px">
 					<div class="col-xs-4 col-lg-3">
 						<div class="input-group">
-							<div style="height: 20px;" class="input-group-addon"><i class="fa-solid fa-search fa-xs"></i></div>
-							<input id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
+							<div class="input-group-addon"><i class="fa fa-search"></i></div>
+							<input style="height: 40px;" id="user_search" type="text" class="form-control vh-input" onclick="$('#user_search').val(''); generate_user_list();" onkeyup="generate_user_list()" >
 						</div>
 						<br/>
 						<ul class="nav nav-pills nav-stacked" id="user_list">
@@ -124,7 +125,7 @@ function VyHub.Dashboard:load_html()
 									<div class="col-xs-9">
 										<span id="user_name">
 											<span class="label label-default" style="background-color: #5E0000; border-radius: .25em 0 0 .25em;">
-												<i class="fa-solid fa-user"></i> &nbsp;<span id="user_content_name"></span>
+												<i class="fa fa-user"></i> &nbsp;<span id="user_content_name"></span>
 											</span>
 											<span class="label label-default" style="border-radius: 0 .25em .25em 0;">
 												<span id="user_content_username"></span>
@@ -140,14 +141,14 @@ function VyHub.Dashboard:load_html()
 
 							<hr/>
 
-							<h4><span class="label label-default"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp;]] .. VyHub.lang.other.warnings .. [[</span></h3>
+							<h4><span class="label label-default"><i class="fa fa-exclamation-triangle"></i> &nbsp;]] .. VyHub.lang.other.warnings .. [[</span></h3>
 
 							<div class="row perm-warning_edit">
 								<div class="col-xs-10">
 									<input id="user_warn" type="text" class="form-control vh-input" onclick="$('#user_warn').val('');" placeholder="]] .. VyHub.lang.other.reason .. [[" />
 								</div>
 								<div class="col-xs-2" style="padding-left: 0;">
-									<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa-solid fa-triangle-exclamation"></i> &nbsp; ]] .. VyHub.lang.dashboard.action_warn .. [[</button>
+									<button style="height: 30px;" onclick="create_warning()" class="btn btn-warning btn-xs btn-block"><i class="fa fa-exclamation-triangle"></i> &nbsp; ]] .. VyHub.lang.dashboard.action_warn .. [[</button>
 								</div>
 							</div>
 
@@ -167,14 +168,14 @@ function VyHub.Dashboard:load_html()
 							</table>
 
 							<div>
-								<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; ]] .. VyHub.lang.other.active .. [[</span>
-								<span class="label label-warning"><i class="fa-solid fa-hourglass"></i>&nbsp; ]] .. VyHub.lang.other.inactive .. [[</span>
-								<span class="label label-default"><i class="fa-solid fa-times"></i>&nbsp; ]] .. VyHub.lang.other.disabled .. [[</span>
+								<span class="label label-success"><i class="fa fa-check"></i>&nbsp; ]] .. VyHub.lang.other.active .. [[</span>
+								<span class="label label-warning"><i class="fa fa-hourglass"></i>&nbsp; ]] .. VyHub.lang.other.inactive .. [[</span>
+								<span class="label label-default"><i class="fa fa-times"></i>&nbsp; ]] .. VyHub.lang.other.disabled .. [[</span>
 							</div>
 
 							<hr />
 							
-							<h4><span class="label label-default"><i class="fa-solid fa-gavel"></i> &nbsp;]] .. VyHub.lang.other.bans .. [[</span></h3>
+							<h4><span class="label label-default"><i class="fa fa-gavel"></i> &nbsp;]] .. VyHub.lang.other.bans .. [[</span></h3>
 
 							<div class="row perm-ban_edit">
 								<div class="col-xs-8">
@@ -184,7 +185,7 @@ function VyHub.Dashboard:load_html()
 									<input id="user_ban_minutes" type="text" class="form-control vh-input" onclick="$('#user_ban_minutes').val('');" placeholder="]] .. VyHub.lang.other.minutes .. [[" />
 								</div>
 								<div class="col-xs-2" style="padding-left: 0;">
-									<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa-solid fa-gavel"></i> &nbsp; ]] .. VyHub.lang.dashboard.action_ban .. [[</button>
+									<button style="height: 30px;" onclick="create_ban()" class="btn btn-danger btn-xs btn-block"><i class="fa fa-gavel"></i> &nbsp; ]] .. VyHub.lang.dashboard.action_ban .. [[</button>
 								</div>
 							</div>
 
@@ -205,18 +206,18 @@ function VyHub.Dashboard:load_html()
 							</table>
 
 							<div>
-								<span class="label label-success"><i class="fa-solid fa-check"></i>&nbsp; ]] .. VyHub.lang.other.active .. [[</span>
-								<span class="label label-info"><i class="fa-solid fa-globe"></i>&nbsp; ]] .. VyHub.lang.other.active_global .. [[</span>
-								<span class="label label-warning"><i class="fa-solid fa-times"></i>&nbsp; ]] .. VyHub.lang.other.unbanned .. [[</span>
-								<span class="label label-danger"><i class="fa-solid fa-hourglass"></i>&nbsp; ]] .. VyHub.lang.other.inactive .. [[</span>
+								<span class="label label-success"><i class="fa fa-check"></i>&nbsp; ]] .. VyHub.lang.other.active .. [[</span>
+								<span class="label label-info"><i class="fa fa-globe"></i>&nbsp; ]] .. VyHub.lang.other.active_global .. [[</span>
+								<span class="label label-warning"><i class="fa fa-times"></i>&nbsp; ]] .. VyHub.lang.other.unbanned .. [[</span>
+								<span class="label label-danger"><i class="fa fa-hourglass"></i>&nbsp; ]] .. VyHub.lang.other.inactive .. [[</span>
 							</div>
 						</div>
 					</div>
 				</div>
 			</body>
 
-			<script>]] .. VyHub.JS.jquery2 .. [[</script>
-			<script>]] .. VyHub.JS.moment .. [[</script>
+			<script src="https://cdn.vyhub.net/assets/jquery-2.2.4.min.js"></script>
+			<script src="https://cdn.vyhub.net/assets/moment-2.29.4.min.js"></script>
 			<script>
 				var perms = null;
 				var users = [];
@@ -297,8 +298,8 @@ function VyHub.Dashboard:load_html()
 						$('#user_list').append(' \
 						<li class="user-tab" id="user_tab_' + user.id + '" onclick="generate_user_overview(\'' + user.id + '\')" style="cursor:pointer; color: ' + color + ';"> \
 							' + escape(activity.extra.Nickname) + ' \
-							<span class="badge pull-right" style="background-color: ' + ban_badge_color + ';">' + user.bans.length + ' <i class="fa-solid fa-gavel"></i></span> \
-							<span class="badge pull-right" style="background-color: ' + warn_badge_color + '; margin-left: 3px; margin-right: 3px;">' + user.warnings.length + ' <i class="fa-solid fa-triangle-exclamation"></i></span> \
+							<span class="badge pull-right" style="background-color: ' + ban_badge_color + ';">' + user.bans.length + ' <i class="fa fa-gavel"></i></span> \
+							<span class="badge pull-right" style="background-color: ' + warn_badge_color + '; margin-left: 3px; margin-right: 3px;">' + user.warnings.length + ' <i class="fa fa-exclamation-triangle"></i></span> \
 						</li> \
 						');
 
@@ -356,8 +357,8 @@ function VyHub.Dashboard:load_html()
 								<td>' + escape(warning.creator.username) + '</td> \
 								<td>' + format_date(warning.created_on) + '</td> \
 								<td class="text-right"> \
-									<button class="btn btn-default btn-xs perm-warning_edit" onclick="vyhub.warning_toggle(\'' + warning.id + '\')"><i class="fa-solid fa-play"></i><i class="fa-solid fa-pause"></i></button> \
-									<button class="btn btn-default btn-xs perm-warning_delete" onclick="vyhub.warning_delete(\'' + warning.id + '\')"><i class="fa-solid fa-trash"></i></button> \
+									<button class="btn btn-default btn-xs perm-warning_edit" onclick="vyhub.warning_toggle(\'' + warning.id + '\')"><i class="fa fa-play"></i><i class="fa fa-pause"></i></button> \
+									<button class="btn btn-default btn-xs perm-warning_delete" onclick="vyhub.warning_delete(\'' + warning.id + '\')"><i class="fa fa-trash"></i></button> \
 								</td> \
 							</tr> \
 						');
@@ -384,9 +385,9 @@ function VyHub.Dashboard:load_html()
 						var actions = "";
 
 						if (ban.status == "ACTIVE") {
-							actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'UNBANNED\')"><i class="fa-solid fa-check"></i> &nbsp;]] .. VyHub.lang.other.unban .. [[</button>';
+							actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'UNBANNED\')"><i class="fa fa-check"></i> &nbsp;]] .. VyHub.lang.other.unban .. [[</button>';
 						} else if (ban.status == "UNBANNED") {
-							actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'ACTIVE\')"><i class="fa-solid fa-gavel"></i> &nbsp;]] .. VyHub.lang.other.reban .. [[</button>';
+							actions += '<button class="btn btn-default btn-xs perm-ban_edit" onclick="vyhub.ban_set_status(\'' + ban.id + '\', \'ACTIVE\')"><i class="fa fa-gavel"></i> &nbsp;]] .. VyHub.lang.other.reban .. [[</button>';
 						}
 
 						$('#user_content_bans').append(' \
@@ -464,7 +465,7 @@ concommand.Add("vh_dashboard", function ()
 		VyHub.Dashboard.ui:Show()
 		VyHub.Dashboard.ui:MakePopup()
 	else
-		VyHub.Dashboard:create_ui()
+		-- VyHub.Dashboard:create_ui()
 
 --		if VyHub.Dashboard.ui != nil and VyHub.Dashboard.ui:IsValid() and VyHub.Dashboard.ui:IsVisible() then
 --			VyHub.Dashboard.ui:Hide()
@@ -492,8 +493,6 @@ net.Receive("vyhub_dashboard", function()
 		end
 
 		timer.Remove("vyhub_dashboard_html_ready")
-
-		MsgN("VyHub Dashboard: HTML Loaded")
 
 		VyHub.Dashboard:load_perms(perms_json)
 		VyHub.Dashboard:load_users(users_json)
