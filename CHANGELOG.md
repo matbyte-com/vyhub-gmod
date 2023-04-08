@@ -1,2 +1,3 @@
-- Improve some console messages
-- Fix problems with `ply:SetUserGroup` (relevant if no admin addon is used)
+- Remove local JS/CSS dependencies, use CDN instead
+- Fix server dashboard icons
+- Fix 404 and 500 error on user creation
