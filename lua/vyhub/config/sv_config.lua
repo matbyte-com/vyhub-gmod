@@ -1,6 +1,12 @@
+-- VyHub Server Config
+-- BEWARE: Additional config values can be set in data/vyhub/config.json with the `vh_config <key> <value>` console command.
+--         The configuration in this file is overwritten by the configuration in data/vyhub/config.json
+
+-- ONLY SET THE 3 FOLLOWING OPTIONS IF YOU KNOW WHAT YOU ARE DOING!
+-- PLEASE FOLLOW THE INSTALLATION INSTRUCTIONS HERE: https://docs.vyhub.net/latest/game/gmod/#installation
 VyHub.Config.api_url = "" -- https://api.vyhub.app/<name>/v1
-VyHub.Config.api_key = "" -- Admin -> Settings -> Server -> Serverbundle -> Keys
-VyHub.Config.server_id = "" -- Admin -> Settings -> Server
+VyHub.Config.api_key = "" -- Admin -> Settings -> Server -> Setup
+VyHub.Config.server_id = "" -- Admin -> Settings -> Server -> Setup
 
 -- Player groups are checked every X seconds
 VyHub.Config.player_refresh_time = 120
