@@ -1,3 +1,1 @@
-- Remove local JS/CSS dependencies, use CDN instead
-- Fix server dashboard icons
-- Fix 404 and 500 error on user creation
+- Improve HTTP error messages (hide all >= 500 responses and hide responses that contain HTML)
