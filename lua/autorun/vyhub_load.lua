@@ -13,11 +13,11 @@ function VyHub:msg(message, type)
 	if type == "success" then
 		MsgC("[VyHub] ", Color(0, 255, 0), message .. "\n")
 	elseif type == "error" then
-		MsgC("[VyHub] ", Color(255, 0, 0), message .. "\n")
+		MsgC("[VyHub] [ERROR] ", Color(255, 0, 0), message .. "\n")
 	elseif type == "neutral" then
 		MsgC("[VyHub] ", Color(255, 255, 255), message .. "\n")
     elseif type == "warning" then
-		MsgC("[VyHub] ", Color(211, 120, 0), message .. "\n")
+		MsgC("[VyHub] [WARN] ", Color(211, 120, 0), message .. "\n")
     elseif type == "debug" and VyHub.Config.debug then
 		MsgC("[VyHub] [Debug] ", Color(255, 255, 255), message .. "\n")
 	end

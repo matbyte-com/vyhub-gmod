@@ -31,9 +31,18 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
             end
         else
             if not table.HasValue(no_error_for, code) then
-                VyHub:msg(string.format("HTTP %s %s: %s \nQuery: %s\nBody: %s", method, url, code, json.encode(query), request_body), "error")
+                local err_msg = string.format("HTTP %s %s: %s", method, url, code)
+
+                if query then
+                    err_msg = err_msg .. string.format("\nQuery: %s", json.encode(query))
+                end
+                if request_body then
+                    err_msg = err_msg .. string.format("\nBody: %s", request_body)
+                end
+
+                VyHub:msg(err_msg, "error")
                 
-                if code != 502 then
+                if code < 500 and string.find( body:lower(), "<!doctype html" ) == nil then
                     VyHub:msg(string.format("Response: %s", body), "error")
                 end
             end
@@ -51,7 +60,16 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
     end
 
     failed_func = function(reason)
-        VyHub:msg(string.format("HTTP %s request to %s failed with reason '%s'.\nQuery: %s\nBody: %s", method, url, reason, json.encode(query), request_body), "error")
+        local err_msg = string.format("HTTP %s %s: %s", method, url, code)
+
+        if query then
+            err_msg = err_msg .. string.format("\nQuery: %s", json.encode(query))
+        end
+        if request_body then
+            err_msg = err_msg .. string.format("\nBody: %s", request_body)
+        end
+
+        VyHub:msg(err_msg, "error")
 
         if failed != nil then
             failed(0, reason, {})
