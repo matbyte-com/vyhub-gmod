@@ -42,7 +42,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
 
                 VyHub:msg(err_msg, "error")
                 
-                if code < 500 and string.find( body:lower(), "<!doctype html" ) == nil then
+                if code < 500 and string.find( body:lower(), "html>" ) == nil then
                     VyHub:msg(string.format("Response: %s", body), "error")
                 end
             end
