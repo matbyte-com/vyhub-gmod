@@ -1,1 +1,2 @@
-- Improve HTTP error messages (hide all >= 500 responses and hide responses that contain HTML)
+- Improve error handling
+- Add french translation
