@@ -30,10 +30,7 @@ function VyHub.Group:refresh()
             net.Broadcast()
         end
     end, function (code, reason)
-        VyHub:msg("Could not refresh groups. Retrying in a minute.", "error")
-        timer.Simple(60, function ()
-            VyHub.Group:refresh()
-        end)
+        VyHub:msg("Could not refresh groups.", "error")
     end)
 end
 
