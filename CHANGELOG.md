@@ -1,2 +1,1 @@
-- Improve error handling
-- Add french translation
+- Fix problem with infinite group refresh loop when API not available
