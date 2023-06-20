@@ -32,7 +32,7 @@ if SERVER then
         -- libs
         VyHub:msg("Loading lib files...")
         local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
-        for _, file in pairs( files ) do
+        for _, file in ipairs( files ) do
             AddCSLuaFile( vyhub_root .. "/lib/" .. file )
             include( vyhub_root .. "/lib/" .. file )
         end
@@ -52,7 +52,7 @@ if SERVER then
         -- Shared Files
         VyHub:msg("Loading shared files...")
         local files = file.Find( vyhub_root .."/shared/*.lua", "LUA" )
-        for _, file in pairs( files ) do
+        for _, file in ipairs( files ) do
             AddCSLuaFile( vyhub_root .. "/shared/" .. file )
             include( vyhub_root .. "/shared/" .. file )
         end
@@ -60,14 +60,14 @@ if SERVER then
         --Client Files
         VyHub:msg("Loading client files...")
         local files = file.Find( vyhub_root .."/client/*.lua", "LUA" )
-        for _, file in pairs( files ) do
+        for _, file in ipairs( files ) do
             AddCSLuaFile( vyhub_root .."/client/" .. file )
         end
 
         -- Server Files
         VyHub:msg("Loading server files...")
         local files = file.Find( vyhub_root .. "/server/*.lua", "LUA" )
-        for _, file in pairs( files ) do
+        for _, file in ipairs( files ) do
             include( vyhub_root .. "/server/" .. file )
         end
 
@@ -94,7 +94,7 @@ if CLIENT then
     -- libs
     VyHub:msg("Loading lib files...")
     local files = file.Find( vyhub_root .."/lib/*.lua", "LUA" )
-    for _, file in pairs( files ) do
+    for _, file in ipairs( files ) do
         include( vyhub_root .. "/lib/" .. file )
     end
 
@@ -105,7 +105,7 @@ if CLIENT then
     --Config Files
     VyHub:msg("Loading config files...")
     local files = file.Find( vyhub_root .."/config/*.lua", "LUA" )
-    for _, file in pairs( files ) do
+    for _, file in ipairs( files ) do
         if not string.StartWith(file, 'sv_') then
             include( vyhub_root .. "/config/" .. file )
         end
@@ -114,14 +114,14 @@ if CLIENT then
     --Shared Files
     VyHub:msg("Loading shared files...")
     local files = file.Find( vyhub_root .."/shared/*.lua", "LUA" )
-    for _, file in pairs( files ) do
+    for _, file in ipairs( files ) do
         include( vyhub_root .. "/shared/" .. file )
     end
 
     --Client Files
     VyHub:msg("Loading client files...")
     local files = file.Find( vyhub_root .."/client/*.lua", "LUA" )
-    for _, file in pairs( files ) do
+    for _, file in ipairs( files ) do
         include( vyhub_root .."/client/" .. file )
     end
 
