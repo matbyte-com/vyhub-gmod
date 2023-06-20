@@ -744,7 +744,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                     end
                 end
 
-                for _, ply in ipairs(player.GetHumans()) do
+                for _, ply in pairs(player.GetHumans()) do
                     if ply:xAdminHasPermission("ban") then
                         xAdmin.Admin.UpdateAllBans(ply)
                     end

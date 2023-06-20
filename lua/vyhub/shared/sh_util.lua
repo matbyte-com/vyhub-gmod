@@ -48,7 +48,7 @@ end
 function VyHub.Util:get_ply_by_nick(nick)
 	nick = string.lower(nick);
 	
-	for _, v in ipairs(player.GetHumans()) do
+	for _, v in pairs(player.GetHumans()) do
 		if(string.find(string.lower(v:Name()), nick, 1, true) != nil)
 			then return v;
 		end
@@ -180,7 +180,7 @@ end
 function VyHub.Util:get_player_by_nick(nick)
 	nick = string.lower(nick);
 	
-	for _,v in ipairs(player.GetHumans()) do
+	for _,v in pairs(player.GetHumans()) do
 		if(string.find(string.lower(v:Name()), nick, 1, true) != nil)
 			then return v;
 		end
@@ -207,7 +207,7 @@ end
 
 
 function VyHub.Util:invalid_str(str_list)
-	for _, str in ipairs(str_list) do
+	for _, str in pairs(str_list) do
 		if str == nil or string.Trim(str) == "" then
 			return true
 		end
