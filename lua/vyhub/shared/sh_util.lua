@@ -4,7 +4,8 @@ VyHub.Util = VyHub.Util or {}
 VyHub.Util.chat_commands = VyHub.Util.chat_commands or {}
 
 if SERVER then
-	util.AddNetworkString("vyhub_run_lua")
+	util.AddNetworkString("vyhub_print_chat")
+	util.AddNetworkString("vyhub_play_sound")
 end
 
 function VyHub.Util:format_datetime(unix_timestamp)
@@ -117,7 +118,7 @@ function VyHub.Util:replace_colors(message)
 	return message
 end
 
-function VyHub.Util:print_chat(ply, message, tag, color)
+function VyHub.Util:print_chat(ply, message, tag)
 	if SERVER then
 		if IsValid(ply) then
 			if not VyHub.Config.chat_tag then
@@ -125,25 +126,21 @@ function VyHub.Util:print_chat(ply, message, tag, color)
 			end
 
 			if not tag then
-				tag = [[Color(0, 187, 255), "[]] .. VyHub.Config.chat_tag .. [[] ", ]]
+				tag = VyHub.Config.chat_tag
 			end
 
-			if not color then
-				color = [[255, 255, 255]]
-			end
-
-			message = string.Replace(message, '"', '')
 			message = string.Replace(message, '\r', '')
 			message = string.Replace(message, '\n', '')
 
 			message = VyHub.Util:replace_colors(message)
 
-			local tosend = [[chat.AddText(]] .. tag .. [[Color(]] .. color .. [[), "]] .. message .. [[" )]]
-
-			net.Start("vyhub_run_lua")
-				net.WriteString(tosend)
+			net.Start("vyhub_print_chat")
+				net.WriteString(message)
+				net.WriteString(tag)
 			net.Send(ply)
 		end
+	elseif CLIENT then
+		chat.AddText(Color(0, 187, 255), tag, Color(255, 255, 255), message)
 	end
 end
 
@@ -162,10 +159,20 @@ function VyHub.Util:play_sound_steamid(steamid, url)
 		local ply = player.GetBySteamID64(steamid)
 	
 		if IsValid(ply) then
-			net.Start("vyhub_run_lua")
-				net.WriteString([[sound.PlayURL ( "]] .. url .. [[", "", function() end)]])
+			return VyHub.Util:play_sound(ply, url)
+		end
+	end
+end
+
+function VyHub.Util:play_sound(ply, url)
+	if SERVER then
+		if IsValid(ply) then
+			net.Start("vyhub_play_sound")
+				net.WriteString(url)
 			net.Send(ply)
 		end
+	elseif CLIENT then
+		sound.PlayURL ( url, "", function() end)
 	end
 end
 
@@ -220,4 +227,21 @@ function VyHub.Util:escape_concommand_str(str)
 	str = string.Replace(str, '"', "'")
 
 	return str
+end
+
+
+
+if CLIENT then
+	net.Receive("vyhub_print_chat", function ()
+		local message = net.ReadString()
+		local tag = net.ReadString()
+
+		VyHub.Util:print_chat(nil, message, tag)
+	end)
+
+	net.Receive("vyhub_play_sound", function ()
+		local url = net.ReadString()
+
+		VyHub.Util:play_sound_steamid()
+	end)
 end
