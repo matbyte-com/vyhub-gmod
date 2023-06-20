@@ -1,3 +1,4 @@
+local f = string.format
 
 VyHub.Group = VyHub.Group or {}
 
@@ -12,7 +13,7 @@ function VyHub.Group:refresh()
         if result != VyHub.groups then
             VyHub.groups = result
         
-            VyHub:msg(string.format("Found groups: %s", json.encode(result)), "debug")
+            VyHub:msg(f("Found groups: %s", json.encode(result)), "debug")
 
             VyHub.groups_mapped = {}
 
@@ -45,7 +46,7 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
         return
     end
 
-    group = VyHub.groups_mapped[groupname]
+    local group = VyHub.groups_mapped[groupname]
 
     if group == nil then
         VyHub:msg(f("Could not find VyHub group with name %s", groupname), "error")
@@ -288,7 +289,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
                     length = nil
                 end
 
-                seconds = nil
+                local seconds = nil
 
                 if length != nil then
                     seconds = math.Round(length * 60, 0)

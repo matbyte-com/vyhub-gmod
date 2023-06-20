@@ -1,3 +1,5 @@
+local f = string.format
+
 local meta_ply = FindMetaTable("Player")
 
 function meta_ply:VyHubID()

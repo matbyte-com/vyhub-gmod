@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Dashboard = VyHub.Dashboard or {}
 VyHub.Dashboard.last_update = VyHub.Dashboard.last_update or {}
 VyHub.Dashboard.data = VyHub.Dashboard.data or {}

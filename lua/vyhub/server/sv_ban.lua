@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Ban = VyHub.Ban or {}
 VyHub.bans = VyHub.bans or {}
 VyHub.Ban.ban_queue = VyHub.Ban.ban_queue or {}
@@ -20,9 +22,9 @@ function VyHub.Ban:check_player_banned(steamid)
     local bans = VyHub.bans[steamid]
     local queued_bans = VyHub.Ban.ban_queue[steamid]
 
-    ban_exists = bans != nil and not table.IsEmpty(bans)
+    local ban_exists = bans != nil and not table.IsEmpty(bans)
 
-    queued_ban_exists = false
+    local queued_ban_exists = false
 
     if queued_bans != nil then
         for _, ban in pairs(queued_bans) do
@@ -33,7 +35,7 @@ function VyHub.Ban:check_player_banned(steamid)
         end
     end
 
-    queued_unban_exists = VyHub.Ban.unban_queue[steamid] != nil
+    local queued_unban_exists = VyHub.Ban.unban_queue[steamid] != nil
 
     return (ban_exists or queued_ban_exists) and not queued_unban_exists
 end
@@ -52,7 +54,7 @@ function VyHub.Ban:refresh()
 
         VyHub.Cache:save("bans", VyHub.bans)
         
-        VyHub:msg(string.format("Found %s users with active bans.", table.Count(VyHub.bans)), "debug")
+        VyHub:msg(f("Found %s users with active bans.", table.Count(VyHub.bans)), "debug")
 
         hook.Run("vyhub_bans_refreshed")
     end, function()
@@ -63,7 +65,7 @@ function VyHub.Ban:refresh()
         if result != nil then
             VyHub.bans = result
 
-            VyHub:msg(string.format("Found %s users with cached active bans.", table.Count(VyHub.bans)), "neutral")
+            VyHub:msg(f("Found %s users with cached active bans.", table.Count(VyHub.bans)), "neutral")
 
             hook.Run("vyhub_bans_refreshed")
         else
@@ -74,11 +76,11 @@ end
 
 function VyHub.Ban:handle_queue()
     local function failed_ban(steamid)
-        VyHub:msg(string.format("Could not send ban of user %s to API. Retrying..", steamid), "error")
+        VyHub:msg(f("Could not send ban of user %s to API. Retrying..", steamid), "error")
     end
 
     local function failed_unban(steamid)
-        VyHub:msg(string.format("Could not send unban of user %s to API. Retrying..", steamid), "error")
+        VyHub:msg(f("Could not send unban of user %s to API. Retrying..", steamid), "error")
     end
 
     local function failed_ban_abort(steamid)
@@ -131,9 +133,9 @@ function VyHub.Ban:handle_queue()
                                             hook.Run("vyhub_dashboard_data_changed")
                                         end, function(code, reason)
                                             if code >= 400 and code < 500 then
-                                                msg = reason
+                                                local msg = reason
 
-                                                local error_msg = string.format("Could not create ban for %s, aborting: %s", steamid, json.encode(msg))
+                                                local error_msg = f("Could not create ban for %s, aborting: %s", steamid, json.encode(msg))
 
                                                 VyHub:msg(error_msg, "error")
                                                 
@@ -258,7 +260,7 @@ function VyHub.Ban:create(steamid, length, reason, creator_steamid)
     VyHub.Ban:save_queues()
     VyHub.Ban:handle_queue()
 
-    VyHub:msg(string.format("Scheduled ban for user %s.", steamid))
+    VyHub:msg(f("Scheduled ban for user %s.", steamid))
 end
 
 function VyHub.Ban:unban(steamid, processor_steamid)
@@ -269,7 +271,7 @@ function VyHub.Ban:unban(steamid, processor_steamid)
     VyHub.Ban:save_queues()
     VyHub.Ban:handle_queue()
 
-    VyHub:msg(string.format("Scheduled unban for user %s.", steamid))
+    VyHub:msg(f("Scheduled unban for user %s.", steamid))
 end
 
 function VyHub.Ban:save_queues()
@@ -724,7 +726,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
                     if ban != nil then
                         for _, ban in pairs(bans) do
                             if ban != nil then
-                                admin_steamid = nil 
+                                local admin_steamid = nil 
 
                                 if ban.creator != nil and ban.creator.type == "STEAM" then
                                     admin_steamid = ban.creator.identifier
@@ -784,7 +786,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             local StartBannedUsers = {} 
             hook.Add("PlayerAuthed", "FAdmin_LeavingBeforeBan", function(ply, SteamID, ...)
                 if table.HasValue(StartBannedUsers, SteamID) then
-                    game.ConsoleCommand(string.format("kickid %s %s\n", ply:UserID(), "Getting banned"))
+                    game.ConsoleCommand(f("kickid %s %s\n", ply:UserID(), "Getting banned"))
                 end
             end)
 

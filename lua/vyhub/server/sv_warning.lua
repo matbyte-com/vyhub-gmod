@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Warning = VyHub.Warning or {}
 
 function VyHub.Warning:create(steamid, reason, processor_steamid)

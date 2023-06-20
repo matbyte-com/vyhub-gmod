@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Util = VyHub.Util or {}
 VyHub.Util.chat_commands = VyHub.Util.chat_commands or {}
 
@@ -9,7 +11,7 @@ function VyHub.Util:format_datetime(unix_timestamp)
     unix_timestamp = unix_timestamp or os.time()
 
     local tz_wrong = os.date("%z", unix_timestamp)
-    local timezone = string.format("%s:%s", string.sub(tz_wrong, 1, 3), string.sub(tz_wrong, 4, 5))
+    local timezone = f("%s:%s", string.sub(tz_wrong, 1, 3), string.sub(tz_wrong, 4, 5))
 
     return os.date("%Y-%m-%dT%H:%M:%S" .. timezone, unix_timestamp)
 end
@@ -46,7 +48,7 @@ end
 function VyHub.Util:get_ply_by_nick(nick)
 	nick = string.lower(nick);
 	
-	for _,v in ipairs(player.GetHumans()) do
+	for _, v in ipairs(player.GetHumans()) do
 		if(string.find(string.lower(v:Name()), nick, 1, true) != nil)
 			then return v;
 		end
@@ -147,7 +149,7 @@ end
 
 function VyHub.Util:print_chat_steamid(steamid, message, tag, color)
 	if steamid != nil and steamid != false then
-		ply = player.GetBySteamID64(steamid)
+		local ply = player.GetBySteamID64(steamid)
 	
 		if IsValid(ply) then
 			VyHub.Util:print_chat(ply,  message, tag, color)
@@ -157,7 +159,7 @@ end
 
 function VyHub.Util:play_sound_steamid(steamid, url)
 	if steamid != nil and steamid != false then
-		ply = player.GetBySteamID64(steamid)
+		local ply = player.GetBySteamID64(steamid)
 	
 		if IsValid(ply) then
 			net.Start("vyhub_run_lua")

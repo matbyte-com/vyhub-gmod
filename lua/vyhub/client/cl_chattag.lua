@@ -1,3 +1,5 @@
+local f = string.format
+
 if VyHub.Config.chat_tags and not DarkRP then
 	hook.Add("OnPlayerChat", "vyhub_chattag_OnPlayerChat", function(ply, msg)
 		if IsValid(ply) then

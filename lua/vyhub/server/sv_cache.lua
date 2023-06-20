@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Cache = VyHub.Cache or {}
 
 function VyHub.Cache:save(key, value)
@@ -6,7 +8,7 @@ function VyHub.Cache:save(key, value)
         data = value
     }
 
-    local filename = string.format("vyhub/%s.json", key)
+    local filename = f("vyhub/%s.json", key)
     local json = json.encode(data)
 
     VyHub:msg("Write " .. filename .. ": " .. json, "debuga")
@@ -15,7 +17,7 @@ function VyHub.Cache:save(key, value)
 end
 
 function VyHub.Cache:get(key, max_age)
-    local path = string.format("vyhub/%s.json", key)
+    local path = f("vyhub/%s.json", key)
 
     if not file.Exists(path, "data") then
         return nil

@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Dashboard = VyHub.Dashboard or {}
 
 VyHub.Dashboard.ui = VyHub.Dashboard.ui or nil

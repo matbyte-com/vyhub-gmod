@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Player = VyHub.Player or {}
 
 VyHub.Player.connect_queue = VyHub.Player.connect_queue or {}
@@ -10,10 +12,10 @@ function VyHub.Player:initialize(ply, retry)
 
     local steamid = ply:SteamID64()
 
-    VyHub:msg(string.format("Initializing user %s, %s", ply:Nick(), steamid))
+    VyHub:msg(f("Initializing user %s, %s", ply:Nick(), steamid))
 
     VyHub.API:get("/user/%s", {steamid}, {type = "STEAM"}, function(code, result)
-        VyHub:msg(string.format("Found existing user %s for steam id %s (%s).", result.id, steamid, ply:Nick()), "success")
+        VyHub:msg(f("Found existing user %s for steam id %s (%s).", result.id, steamid, ply:Nick()), "success")
 
         VyHub.Player.table[steamid] = result
         ply:SetNWString("vyhub_id", result.id)
@@ -34,7 +36,7 @@ function VyHub.Player:initialize(ply, retry)
         end)
     end, function(code, reason)
         if code != 404 then
-            VyHub:msg(string.format("Could not check if users %s exists. Retrying in a minute..", steamid), "error")
+            VyHub:msg(f("Could not check if users %s exists. Retrying in a minute..", steamid), "error")
 
             timer.Simple(60, function ()
                 VyHub.Player:initialize(ply)
@@ -44,7 +46,7 @@ function VyHub.Player:initialize(ply, retry)
         end
 
         if retry then
-            VyHub:msg(string.format("Could not create user %s. Retrying in a minute..", steamid), "error")
+            VyHub:msg(f("Could not create user %s. Retrying in a minute..", steamid), "error")
 
             timer.Simple(60, function()
                 VyHub.Player:initialize(ply)
@@ -78,7 +80,7 @@ function VyHub.Player:create(steamid, success, err)
         return
     end
 
-    VyHub:msg(string.format("No existing user found for steam id %s. Creating..", steamid))
+    VyHub:msg(f("No existing user found for steam id %s. Creating..", steamid))
 
     creation_began[steamid] = os.time()
 
@@ -122,13 +124,13 @@ function VyHub.Player:get(steamid, callback, retry)
         callback(VyHub.Player.table[steamid])
     else
         VyHub.API:get("/user/%s", {steamid}, {type = "STEAM"}, function(code, result)
-            VyHub:msg(string.format("Received user %s for steam id %s.", result.id, steamid), "debug")
+            VyHub:msg(f("Received user %s for steam id %s.", result.id, steamid), "debug")
     
             VyHub.Player.table[steamid] = result
 
             callback(result)
         end, function(code)
-            VyHub:msg(string.format("Could not receive user %s.", steamid), "error")
+            VyHub:msg(f("Could not receive user %s.", steamid), "error")
 
             if code == 404 and retry == nil then
                 VyHub.Player:create(steamid, function ()
@@ -161,7 +163,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if highest == nil then
-            VyHub:msg(string.format("Could not find any active group for %s (%s)", ply:Nick(), ply:SteamID64()), "error")
+            VyHub:msg(f("Could not find any active group for %s (%s)", ply:Nick(), ply:SteamID64()), "error")
             return
         end
 
@@ -175,11 +177,11 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if group == nil then
-            VyHub:msg(string.format("Could not find group name mapping for group %s.", highest.name), "error")
+            VyHub:msg(f("Could not find group name mapping for group %s.", highest.name), "error")
             return
         end
 
-        curr_group = ply:GetUserGroup()
+        local curr_group = ply:GetUserGroup()
 
         if curr_group != group then
             VyHub.Group.group_changes[ply:SteamID64()] = group

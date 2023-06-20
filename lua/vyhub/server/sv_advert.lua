@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Advert = VyHub.Advert or {}
 VyHub.adverts = VyHub.adverts or {}
 

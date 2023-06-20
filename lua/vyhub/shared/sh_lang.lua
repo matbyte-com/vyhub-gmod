@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Lang = VyHub.Lang or {}
 VyHub.lang = VyHub.lang or nil
 

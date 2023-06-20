@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Reward = VyHub.Reward or {}
 VyHub.Reward.executed_rewards_queue = VyHub.Reward.executed_rewards_queue or {}
 VyHub.Reward.executed_rewards = VyHub.Reward.executed_rewards or {}
@@ -21,7 +23,7 @@ local RewardType = {
 
 function VyHub.Reward:refresh(callback, limit_players, err)
     local user_ids = ""
-    players = limit_players or player.GetHumans()
+    local players = limit_players or player.GetHumans()
 
     for _, ply in pairs(players) do
         if IsValid(ply) then

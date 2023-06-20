@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Group = VyHub.Group or {}
 
 function VyHub.Group:get(groupname)

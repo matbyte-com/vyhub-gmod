@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Statistic = VyHub.Statistic or {}
 VyHub.Statistic.playtime = VyHub.Statistic.playtime or {}
 VyHub.Statistic.attr_def = VyHub.Statistic.attr_def or nil
@@ -32,14 +34,14 @@ function VyHub.Statistic:send_playtime()
             return
         end
 
-        user_ids = table.GetKeys(VyHub.Statistic.playtime)
+        local user_ids = table.GetKeys(VyHub.Statistic.playtime)
             
         timer.Create("vyhub_send_stats", 0.3, table.Count(user_ids), function ()
-            i =  table.Count(user_ids)
-            user_id = user_ids[i]
+            local i =  table.Count(user_ids)
+            local user_id = user_ids[i]
 
             if user_id != nil then
-                seconds = VyHub.Statistic.playtime[user_id]
+                local seconds = VyHub.Statistic.playtime[user_id]
                 table.remove(user_ids, i)
 
                 if seconds != nil and seconds > 0 then

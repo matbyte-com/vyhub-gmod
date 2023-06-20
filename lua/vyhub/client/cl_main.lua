@@ -1,4 +1,4 @@
-print("Loaded cl_main")
+local f = string.format
 
 net.Receive("vyhub_run_lua", function()
 	local lua = net.ReadString()

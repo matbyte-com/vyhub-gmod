@@ -1,9 +1,9 @@
 
+local f = string.format
+
 VyHub = VyHub or {}
 VyHub.Config = VyHub.Config or {}
 VyHub.ready = false
-
-f = string.format
 
 local vyhub_root = "vyhub"
 

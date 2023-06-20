@@ -1,3 +1,5 @@
+local f = string.format
+
 function VyHub.Config:load_cache_config()
     local ccfg = VyHub.Cache:get("config")
 

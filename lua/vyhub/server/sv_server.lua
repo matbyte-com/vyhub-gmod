@@ -1,3 +1,5 @@
+local f = string.format
+
 VyHub.Server = VyHub.Server or {}
 
 VyHub.Server.extra_defaults = {
@@ -23,7 +25,7 @@ function VyHub.Server:update_status()
         local id = ply:VyHubID()
 
         if id and string.len(id) == 36 then
-            local tt = string.FormattedTime( ply:TimeConnected() )
+            local tt = ftedTime( ply:TimeConnected() )
 
             table.insert(user_activities, { user_id = id, extra = { 
                 Score = ply:Frags(), 
@@ -43,7 +45,7 @@ function VyHub.Server:update_status()
         user_activities = user_activities,
     }
 
-    VyHub:msg(string.format("Updating status: %s", json.encode(data)), "debug")
+    VyHub:msg(f("Updating status: %s", json.encode(data)), "debug")
 
     VyHub.API:patch(
         '/server/%s',

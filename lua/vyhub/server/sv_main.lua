@@ -1,7 +1,9 @@
+local f = string.format
+
 VyHub.frontend_url = VyHub.frontend_url or nil
 
 function VyHub:server_data_ready()
-    VyHub:msg(string.format("I am server %s in bundle %s.", VyHub.server.name, VyHub.server.serverbundle.name))
+    VyHub:msg(f("I am server %s in bundle %s.", VyHub.server.name, VyHub.server.serverbundle.name))
 
     VyHub.ready = true
 
