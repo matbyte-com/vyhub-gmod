@@ -154,6 +154,9 @@ function VyHub.Player:check_group(ply, callback)
     VyHub.API:get("/user/%s/group", {ply:VyHubID()}, { serverbundle_id = VyHub.server.serverbundle_id }, function(code, result)
         if not IsValid(ply) then return end
 
+        local steamid64 = ply:SteamID64()
+        local nick = ply:Nick()
+
         local highest = nil
 
         for _, group in pairs(result) do
@@ -163,7 +166,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if highest == nil then
-            VyHub:msg(f("Could not find any active group for %s (%s)", ply:Nick(), ply:SteamID64()), "error")
+            VyHub:msg(f("Could not find any active group for %s (%s)", nick, steamid64), "error")
             return
         end
 
@@ -184,7 +187,7 @@ function VyHub.Player:check_group(ply, callback)
         local curr_group = ply:GetUserGroup()
 
         if curr_group != group then
-            VyHub.Group.group_changes[ply:SteamID64()] = group
+            VyHub.Group.group_changes[steamid64] = group
 
             if serverguard then
                 serverguard.player:SetRank(ply, group, false, true)
@@ -198,7 +201,7 @@ function VyHub.Player:check_group(ply, callback)
                 ply:SetUserGroup(group, true)
             end
             
-            VyHub:msg("Added " .. ply:Nick() .. " to group " .. group, "success")
+            VyHub:msg("Added " .. nick .. " to group " .. group, "success")
             VyHub.Util:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
         end
     end, function()
