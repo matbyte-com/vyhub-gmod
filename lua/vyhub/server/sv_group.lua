@@ -26,13 +26,32 @@ function VyHub.Group:refresh()
                 end
             end
 
-            net.Start("vyhub_group_data")
-                net.WriteTable(VyHub.groups_mapped)
-            net.Broadcast()
+            VyHub.Group:send_groups()
         end
     end, function (code, reason)
         VyHub:msg("Could not refresh groups.", "error")
     end)
+end
+
+function VyHub.Group:send_groups(ply)
+    if not VyHub.groups_mapped then return end
+
+    local groups_to_send = VyHub.groups_mapped
+
+    net.Start("vyhub_group_data")
+    net.WriteUInt(table.Count(groups_to_send), 8)
+
+    for name_game, group in pairs(groups_to_send) do
+        net.WriteString(name_game)
+        net.WriteString(group.name)
+        net.WriteString(group.color)
+    end
+
+    if ply != nil and IsValid(ply) then
+        net.Send(ply)
+    else
+        net.Broadcast()
+    end
 end
 
 function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
@@ -152,9 +171,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 
     hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
         if groups_mapped != nil then
-            net.Start("vyhub_group_data")
-                net.WriteTable(VyHub.groups_mapped)
-            net.Send(ply)
+            VyHub.Group:send_groups(ply)
         end
 	end)
 
