@@ -159,7 +159,7 @@ function VyHub.Player:check_group(ply, callback)
 
         local highest = nil
 
-        for _, group in pairs(result) do
+        for _, group in ipairs(result) do
             if highest == nil or highest.permission_level < group.permission_level then
                 highest = group
             end
@@ -172,7 +172,7 @@ function VyHub.Player:check_group(ply, callback)
 
         local group = nil
 
-        for _, mapping in pairs(highest.mappings) do
+        for _, mapping in ipairs(highest.mappings) do
             if mapping.serverbundle_id == nil or mapping.serverbundle_id == VyHub.server.serverbundle.id then
                 group = mapping.name
                 break
@@ -291,7 +291,7 @@ end)
 
 hook.Add("vyhub_ready", "vyhub_ply_vyhub_ready", function ()
     timer.Simple(5, function()
-        for _, ply in pairs(VyHub.Player.connect_queue) do
+        for _, ply in ipairs(VyHub.Player.connect_queue) do
             if IsValid(ply) then
                 hook.Run("vyhub_ply_connected", ply)
             end

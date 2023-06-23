@@ -25,7 +25,7 @@ function VyHub.Reward:refresh(callback, limit_players, err)
     local user_ids = ""
     local players = limit_players or player.GetHumans()
 
-    for _, ply in pairs(players) do
+    for _, ply in ipairs(players) do
         if IsValid(ply) then
             local id = ply:VyHubID()
 
@@ -124,7 +124,7 @@ function VyHub.Reward:exec_rewards(event, steamid)
             continue 
         end
 
-        for _, areward in pairs(arewards) do
+        for _, areward in ipairs(arewards) do
             local se = true
             local reward = areward.reward
 

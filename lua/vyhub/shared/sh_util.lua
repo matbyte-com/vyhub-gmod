@@ -178,7 +178,7 @@ end
 
 
 function VyHub.Util:print_chat_all(message, tag, color)
-	for _, ply in pairs(player.GetHumans()) do
+	for _, ply in ipairs(player.GetHumans()) do
 		VyHub.Util:print_chat(ply, message, tag, color)
 	end
 end

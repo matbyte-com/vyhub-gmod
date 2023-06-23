@@ -17,8 +17,8 @@ function VyHub.Group:refresh()
 
             VyHub.groups_mapped = {}
 
-            for _, group in pairs(VyHub.groups) do
-                for _, mapping in pairs(group.mappings) do
+            for _, group in ipairs(VyHub.groups) do
+                for _, mapping in ipairs(group.mappings) do
                     if mapping.serverbundle_id == nil or mapping.serverbundle_id == VyHub.server.serverbundle.id then
                         VyHub.groups_mapped[mapping.name] = group
                         break

@@ -11,7 +11,7 @@ function VyHub.Statistic:save_playtime()
 end
 
 function VyHub.Statistic:add_one_minute()
-    for _, ply in pairs(player.GetHumans()) do
+    for _, ply in ipairs(player.GetHumans()) do
         local steamid = ply:SteamID64()
         ply:VyHubID(function (user_id)
             if user_id == nil or string.len(user_id) < 10 then

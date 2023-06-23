@@ -21,7 +21,7 @@ end
 function VyHub.Server:update_status()
     local user_activities = {}
 
-    for _, ply in pairs(player.GetHumans()) do
+    for _, ply in ipairs(player.GetHumans()) do
         local id = ply:VyHubID()
 
         if id and string.len(id) == 36 then
@@ -111,7 +111,7 @@ function VyHub.Server:handle_ply_connect(ply)
 				if VyHub.Server:get_extra("res_slots_keep_free") then
 					local tokick = nil
 
-					for _, v in pairs(player.GetHumans()) do
+					for _, v in ipairs(player.GetHumans()) do
 						if v:SteamID64() != ply:SteamID64() and not VyHub.Server:can_use_rslot(v) then
 							if tokick == nil or (IsValid(tokick) and v:TimeConnected() < tokick:TimeConnected()) then
 								tokick = v

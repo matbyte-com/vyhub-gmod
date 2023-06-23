@@ -41,7 +41,7 @@ function VyHub.Ban:check_player_banned(steamid)
 end
 
 function VyHub.Ban:kick_banned_players()
-    for _, ply in pairs(player.GetHumans()) do
+    for _, ply in ipairs(player.GetHumans()) do
         if VyHub.Ban:check_player_banned(ply:SteamID64()) then
             ply:Kick("You are banned from the server.")
         end    
@@ -91,7 +91,7 @@ function VyHub.Ban:handle_queue()
         for steamid, bans in pairs(VyHub.Ban.ban_queue) do
             if bans != nil then
                 if not table.IsEmpty(bans) then
-                    for i, ban in pairs(bans) do
+                    for i, ban in ipairs(bans) do
                         if ban != nil then
                             VyHub.Player:get(ban.user_steamid, function(user)
                                 if user then
@@ -527,7 +527,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
             ULib.bans = {}
             for steamid, bans in pairs(VyHub.bans) do
                 if bans != nil then
-                    for _, ban in pairs(bans) do
+                    for _, ban in ipairs(bans) do
                         if ban != nil then
                             local steamid32 = util.SteamIDFrom64(steamid)
                             local unban_ts = 0
@@ -724,7 +724,7 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
                 for steamid, bans in pairs(VyHub.bans) do
                     if ban != nil then
-                        for _, ban in pairs(bans) do
+                        for _, ban in ipairs(bans) do
                             if ban != nil then
                                 local admin_steamid = nil 
 

@@ -20,7 +20,7 @@ function VyHub.Advert:show(advert)
 		local prefix = [[Color(0, 187, 255), "]] .. string.Replace(VyHub.Config.advert_prefix, '"', '') .. [[", ]]
 		
 		
-		for _, line in pairs(lines) do
+		for _, line in ipairs(lines) do
 			line = string.Replace(line, '\r', '')
 			line = string.Replace(line, '\n', '')
 
