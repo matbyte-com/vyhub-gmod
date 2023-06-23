@@ -170,9 +170,7 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
     end)
 
     hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
-        if groups_mapped != nil then
-            VyHub.Group:send_groups(ply)
-        end
+        VyHub.Group:send_groups(ply)
 	end)
 
 	concommand.Add("vh_setgroup", function(ply, _, args)
