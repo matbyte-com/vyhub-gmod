@@ -15,16 +15,11 @@ function VyHub.Advert:show(advert)
 	if advert then
 		local lines = string.Explode('\n', advert.content)
 		local color = VyHub.Util:hex2rgb(advert.color)
-		local color_string = color.r .. ", " .. color.g .. ", " .. color.b
 
-		local prefix = [[Color(0, 187, 255), "]] .. string.Replace(VyHub.Config.advert_prefix, '"', '') .. [[", ]]
-		
+		local prefix = VyHub.Config.advert_prefix
 		
 		for _, line in ipairs(lines) do
-			line = string.Replace(line, '\r', '')
-			line = string.Replace(line, '\n', '')
-
-			VyHub.Util:print_chat_all(line, prefix, color_string)
+			VyHub.Util:print_chat_all(line, prefix, color)
 		end
 	end
 end

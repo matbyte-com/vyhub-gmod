@@ -102,27 +102,71 @@ if SERVER then
 	end)
 end
 
-function VyHub.Util:replace_colors(message)
-	message = string.Replace(message, '"', '')
-	message = string.Replace(message, '<red>', '", Color(255, 24, 35), "')
-	message = string.Replace(message, '</red>', '", Color(255, 255, 255), "')
-	message = string.Replace(message, '<green>', '", Color(45, 170, 0), "')
-	message = string.Replace(message, '</green>', '", Color(255, 255, 255), "')
-	message = string.Replace(message, '<blue>', '", Color(0, 115, 204), "')
-	message = string.Replace(message, '</blue>', '", Color(255, 255, 255), "')
-	message = string.Replace(message, '<yellow>', '", Color(229, 221, 0), "')
-	message = string.Replace(message, '</yellow>', '", Color(255, 255, 255), "')
-	message = string.Replace(message, '<pink>', '", Color(229, 0, 218), "')
-	message = string.Replace(message, '</pink>', '", Color(255, 255, 255), "')
+local colors = {
+	red = Color(255, 24, 35),
+	green = Color(45, 170, 0),
+	blue = Color(0, 115, 204),
+	yellow = Color(229, 221, 0),
+	pink = Color(229, 0, 218),
+}
 
-	return message
+-- Takes a str message with colors and returns a table
+function VyHub.Util:replace_colors(message, no_color)
+    local resultTable = {}
+    local currentIndex = 1
+
+    local function getColor(colorName)
+        if colors[colorName] then
+            return colors[colorName]
+        else
+            return no_color
+        end
+    end
+
+    local function addStringToTable(str, color)
+        table.insert(resultTable, color)
+        table.insert(resultTable, str)
+    end
+
+    local tags = {}
+
+    -- Extract all color tags and their corresponding content
+    for tag, content in string.gmatch(message, "<([%l]+)>([^<]+)</%1>") do
+        table.insert(tags, {tag = tag, content = content})
+    end
+
+    -- Process the string, splitting it based on the color tags
+    for _, tagData in ipairs(tags) do
+        local startIndex, endIndex = string.find(message, f("<(%s)>[^<]+</%s>", string.PatternSafe(tagData.tag), string.PatternSafe(tagData.tag)), currentIndex, false)
+
+        if startIndex then
+            local str = string.sub(message, currentIndex, startIndex - 1)
+
+            addStringToTable(str, no_color)
+            addStringToTable(tagData.content, getColor(tagData.tag))
+
+            currentIndex = endIndex + 1
+        end
+    end
+
+    -- Append any remaining part of the string
+    local str = string.sub(message, currentIndex)
+    if str != "" then
+        addStringToTable(str, no_color)
+    end
+
+	PrintTable(resultTable)
+
+    return resultTable
 end
 
-function VyHub.Util:print_chat(ply, message, tag)
+function VyHub.Util:print_chat(ply, message, tag, color)
+	color = color or Color(255, 255, 255)
+	
 	if SERVER then
 		if IsValid(ply) then
 			if not VyHub.Config.chat_tag then
-				VyHub.Config.chat_tag = "VyHub"
+				VyHub.Config.chat_tag = "[VyHub] "
 			end
 
 			if not tag then
@@ -132,15 +176,16 @@ function VyHub.Util:print_chat(ply, message, tag)
 			message = string.Replace(message, '\r', '')
 			message = string.Replace(message, '\n', '')
 
-			message = VyHub.Util:replace_colors(message)
-
 			net.Start("vyhub_print_chat")
 				net.WriteString(message)
 				net.WriteString(tag)
+				net.WriteColor(color)
 			net.Send(ply)
 		end
 	elseif CLIENT then
-		chat.AddText(Color(0, 187, 255), tag, Color(255, 255, 255), message)
+		msg_table = VyHub.Util:replace_colors(message, color)
+
+		chat.AddText(Color(0, 187, 255), tag, Color(255, 255, 255), unpack(msg_table))
 	end
 end
 
@@ -149,7 +194,7 @@ function VyHub.Util:print_chat_steamid(steamid, message, tag, color)
 		local ply = player.GetBySteamID64(steamid)
 	
 		if IsValid(ply) then
-			VyHub.Util:print_chat(ply,  message, tag, color)
+			VyHub.Util:print_chat(ply, message, tag, color)
 		end
 	end
 end
@@ -235,8 +280,9 @@ if CLIENT then
 	net.Receive("vyhub_print_chat", function ()
 		local message = net.ReadString()
 		local tag = net.ReadString()
+		local color = net.ReadColor()
 
-		VyHub.Util:print_chat(nil, message, tag)
+		VyHub.Util:print_chat(nil, message, tag, color)
 	end)
 
 	net.Receive("vyhub_play_sound", function ()
