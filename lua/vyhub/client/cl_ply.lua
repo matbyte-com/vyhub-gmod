@@ -2,12 +2,12 @@ local f = string.format
 
 local meta_ply = FindMetaTable("Player")
 
-local user_id = nil
+VyHub.user_id = VyHub.user_id or nil
 
 function meta_ply:VyHubID()
     if IsValid(self) then
         if self == LocalPlayer() then        
-            return user_id
+            return VyHub.user_id
         else
             MsgN("ERROR: Cannot get VyHubID of other users on the client side.")
         end
@@ -15,5 +15,5 @@ function meta_ply:VyHubID()
 end
 
 net.Receive("vyhub_user_id", function ()
-    user_id = net.ReadString()
+    VyHub.user_id = net.ReadString()
 end)
