@@ -27,6 +27,11 @@ VyHub.Config.advert_interval = 180
 -- Printed before every advert line
 VyHub.Config.advert_prefix = "[★] " 
 
+-- Disable group sync
+VyHub.Config.group_disable_sync = false 
+
+-- Disable override of admin mod bans (ULX, SAM, ServerGuard, xAdmin, ...)
+VyHub.Config.ban_disable_sync = false
 -- Replace ULib ban list with VyHub bans
 VyHub.Config.replace_ulib_bans = false
 

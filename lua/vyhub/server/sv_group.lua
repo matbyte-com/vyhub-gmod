@@ -8,6 +8,8 @@ VyHub.Group.group_changes = VyHub.Group.group_changes or {} -- dict(steamid64, g
 
 util.AddNetworkString("vyhub_group_data")
 
+local meta_ply = FindMetaTable("Player")
+
 function VyHub.Group:refresh()
     VyHub.API:get("/group/", nil, nil, function(code, result)
         if result != VyHub.groups then
@@ -160,37 +162,15 @@ function VyHub.Group:remove(steamid, processor_id, callback)
     end)
 end
 
-hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
-    local meta_ply = FindMetaTable("Player")
+function VyHub.Group:override_admin_mods()
+    if VyHub.Config.group_disable_sync then return end
 
-    VyHub.Group:refresh()
+    local _setusergroup = meta_ply.SetUserGroup
 
-    timer.Create("vyhub_group_refresh", VyHub.Config.group_refresh_time, 0, function ()
-        VyHub.Group:refresh()
-    end)
-
-    hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
-        VyHub.Group:send_groups(ply)
-	end)
-
-	concommand.Add("vh_setgroup", function(ply, _, args)
-		if VyHub.Util:is_server(ply) then
-			local steamid = args[1]
-			local group = args[2]
-			local bundle = args[3]
-
-			if steamid and group then
-				VyHub.Group:set(steamid, group)
-			end
-		end
-	end)
-
-	local _setusergroup = meta_ply.SetUserGroup
-
-	if not ULib and not serverguard and not sam and not (xAdmin and xAdmin.Admin.RegisterBan) then
+    if not ULib and not serverguard and not sam and not (xAdmin and xAdmin.Admin.RegisterBan) then
         hook.Remove("PlayerInitialSpawn", "PlayerAuthSpawn")
 
-		meta_ply.SetUserGroup = function(ply, name, ignore_vh)
+        meta_ply.SetUserGroup = function(ply, name, ignore_vh)
             if ply:GetUserGroup() == name then
                 print(ply:SteamID64() .. " already in group " .. name .. ". Ignoring change...")
                 return 
@@ -198,15 +178,15 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
 
             local steamid = ply:SteamID64()
 
-			if not ignore_vh and VyHub.Group.group_changes[steamid] != name then
-				if VyHub.Group:set(steamid, name) or VyHub.Config.disable_group_check then
-					_setusergroup(ply, name)
-				end
-			else
-				_setusergroup(ply, name)
-			end
-		end
-	end
+            if not ignore_vh and VyHub.Group.group_changes[steamid] != name then
+                if VyHub.Group:set(steamid, name) or VyHub.Config.disable_group_check then
+                    _setusergroup(ply, name)
+                end
+            else
+                _setusergroup(ply, name)
+            end
+        end
+    end
 
     if xAdmin and xAdmin.Admin.RegisterBan then
         local xadmin_setgroup = xAdmin.SetGroup
@@ -215,85 +195,85 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
             local steamid32 = isstring(ply) and ply or ply:SteamID()
             local steamid64 = util.SteamIDTo64(steamid32)
 
-			if not ignore_vh then
-				VyHub.Group:set(steamid64, group, nil, nil, function(success)
+            if not ignore_vh then
+                VyHub.Group:set(steamid64, group, nil, nil, function(success)
                     if success then
                         xadmin_setgroup( ply, group )
                     end
                 end)
             else
                 xadmin_setgroup( ply, group )
-			end
-		end
+            end
+        end
     end
 
-	if ULib then
-		local ulx_adduser = ULib.ucl.addUser
-		local ulx_removeuser = ULib.ucl.removeUser
+    if ULib then
+        local ulx_adduser = ULib.ucl.addUser
+        local ulx_removeuser = ULib.ucl.removeUser
 
-		ULib.ucl.addUser = function(steamid32, allow, deny, groupname, ignore_vh)
-			if not ignore_vh then
+        ULib.ucl.addUser = function(steamid32, allow, deny, groupname, ignore_vh)
+            if not ignore_vh then
                 local steamid64 = util.SteamIDTo64(steamid32)
-				VyHub.Group:set(steamid64, groupname, nil, nil, function(success)
+                VyHub.Group:set(steamid64, groupname, nil, nil, function(success)
                     if success then
                         ulx_adduser( steamid32, allow, deny, groupname )
                     end
                 end)
             else
                 ulx_adduser( steamid32, allow, deny, groupname )
-			end
-		end
+            end
+        end
 
-		ULib.ucl.removeUser = function(id)
-			local steamid64 = nil
+        ULib.ucl.removeUser = function(id)
+            local steamid64 = nil
 
-			if string.find(id, ":") then
-				steamid64 = util.SteamIDTo64(id)
-			else
-				local ply = player.GetByUniqueID(id)
+            if string.find(id, ":") then
+                steamid64 = util.SteamIDTo64(id)
+            else
+                local ply = player.GetByUniqueID(id)
 
-				if IsValid(ply) then
-					steamid64 = ply:SteamID64()
-				end
-			end
+                if IsValid(ply) then
+                    steamid64 = ply:SteamID64()
+                end
+            end
 
-			if steamid64 then
+            if steamid64 then
                 VyHub.Group:remove(steamid64, nil, function (success)
                     if success then
                         ulx_removeuser( id )
                     end
                 end)
-			end
-		end
-	end
-	
-	if serverguard then
-		local servergaurd_setrank = serverguard.player["SetRank"]
+            end
+        end
+    end
+    
+    if serverguard then
+        local servergaurd_setrank = serverguard.player["SetRank"]
 
-		function serverguard.player:SetRank(target, rank, length, ignore_vh)
-			if not ignore_vh then
-				if target then
-					if type(target) == "Player" and IsValid(target) then
+        function serverguard.player:SetRank(target, rank, length, ignore_vh)
+            if not ignore_vh then
+                if target then
+                    if type(target) == "Player" and IsValid(target) then
                         VyHub.Group:set(target:SteamID64(), rank, nil, nil, function(success)
                             if success then
                                 servergaurd_setrank(self, target, rank, length)
                             end
                         end)
-					elseif type(target) == "string" and string.match(target, "STEAM_%d:%d:%d+") then
-						local steamid = util.SteamIDTo64(target)
+                    elseif type(target) == "string" and string.match(target, "STEAM_%d:%d:%d+") then
+                        local steamid = util.SteamIDTo64(target)
 
                         VyHub.Group:set(steamid, rank, nil, nil, function(success)
                             if success then
                                 servergaurd_setrank(self, target, rank, length)
                             end
                         end)
-					end
-				end
+                    end
+                end
             else
                 servergaurd_setrank(self, target, rank, length)
-			end
-		end
-	end
+            end
+        end
+    end
 
     if sam then
         local sam_setrank = sam.player.set_rank
@@ -320,4 +300,31 @@ hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
             end
         end
     end
+end
+
+
+hook.Add("vyhub_ready", "vyhub_group_vyhub_ready", function ()
+    VyHub.Group:refresh()
+
+    timer.Create("vyhub_group_refresh", VyHub.Config.group_refresh_time, 0, function ()
+        VyHub.Group:refresh()
+    end)
+
+    hook.Add("vyhub_ply_connected", "vyhub_group_vyhub_ply_connected", function(ply)
+        VyHub.Group:send_groups(ply)
+	end)
+
+	concommand.Add("vh_setgroup", function(ply, _, args)
+		if VyHub.Util:is_server(ply) then
+			local steamid = args[1]
+			local group = args[2]
+			local bundle = args[3]
+
+			if steamid and group then
+				VyHub.Group:set(steamid, group)
+			end
+		end
+	end)
+
+    VyHub.Group:override_admin_mods()
 end)

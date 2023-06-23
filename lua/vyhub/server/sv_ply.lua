@@ -158,6 +158,8 @@ function VyHub.Player:get(steamid, callback, retry)
 end
 
 function VyHub.Player:check_group(ply, callback)
+    if VyHub.Config.group_disable_sync then return end
+    
     if ply:VyHubID() == nil then
         VyHub:msg(f("Could not check groups for user %s, because no VyHub id is available.", ply:SteamID64()), "debug")
         return

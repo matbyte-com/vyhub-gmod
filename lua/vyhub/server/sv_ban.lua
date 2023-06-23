@@ -359,7 +359,9 @@ hook.Add("vyhub_ready", "vyhub_ban_vyhub_ready", function ()
     end)
 end)
 
-hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
+function VyHub.Ban.override_admin_mods()
+    if VyHub.Config.ban_disable_sync then return end
+
     if ULib and ulx then
         ULib.kickban = function(ply, length, reason, admin)
             if IsValid(ply) then
@@ -908,6 +910,10 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
         --     end
         -- end)
     end
+end
+
+hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
+    VyHub.Ban.override_admin_mods()
 
     hook.Add("vyhub_bans_refreshed", "vyhub_ban_vyhub_bans_refreshed", function()
         VyHub.Ban:kick_banned_players()
