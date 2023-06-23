@@ -386,7 +386,9 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
             if not steamid64 then return end
 
-            if IsValid(admin) then
+            local isVoteBan = string.find(debug.traceback(), "ulx/modules/sh/vote.lua") != nil 
+
+            if IsValid(admin) and not isVoteBan then
                 VyHub.Ban:create(steamid64, length, reason, admin:SteamID64())
             else
                 VyHub.Ban:create(steamid64, length, reason)
@@ -431,79 +433,6 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
             if not VyHub.Config.ulib_replace_bans then
                 VyHub.Ban.ulx_unban(steamid32, steamid32_admin)
-            end
-        end
-
-        local function voteBanDone2(t, nick, steamid, time, ply, reason)
-            local shouldBan = false
-
-            if t.results[1] and t.results[1] > 0 then
-                ulx.fancyLogAdmin(ply, "#A approved the voteban against #s (#s minutes) (#s)", nick, time, reason or "")
-                shouldBan = true
-            else
-                ulx.fancyLogAdmin(ply, "#A denied the voteban against #s", nick)
-            end
-
-            if shouldBan then
-                local steamid64 = util.SteamIDTo64(steamid)
-                VyHub.Ban:create(steamid64, time, reason, nil)
-            end
-        end
-
-        local function voteBanDone(t, nick, steamid, time, ply, reason)
-            local results = t.results
-            local winner
-            local winnernum = 0
-            for id, numvotes in pairs(results) do
-                if numvotes > winnernum then
-                    winner = id
-                    winnernum = numvotes
-                end
-            end
-
-            local ratioNeeded = GetConVarNumber("ulx_votebanSuccessratio")
-            local minVotes = GetConVarNumber("ulx_votebanMinvotes")
-            local str
-            if winner ~= 1 or winnernum < minVotes or winnernum / t.voters < ratioNeeded then
-                str = "Vote results: User will not be banned. (" .. (results[1] or "0") .. "/" .. t.voters .. ")"
-            else
-                reason = ("[ULX Voteban] " .. (reason or "")):Trim()
-                if ply:IsValid() then
-                    str = "Vote results: User will now be banned, pending approval. (" .. winnernum .. "/" .. t.voters .. ")"
-                    ulx.doVote( "Accept result and ban " .. nick .. "?", {"Yes", "No" }, voteBanDone2, 30000, {ply}, true, nick, steamid, time, ply, reason)
-                else -- Vote from server console, roll with it
-                    str = "Vote results: User will now be banned. (" .. winnernum .. "/" .. t.voters .. ")"
-                    local steamid64 = util.SteamIDTo64(steamid)
-                    VyHub.Ban:create(steamid64, time, reason, nil)
-                end
-            end
-
-            ULib.tsay(_, str) -- TODO, color?
-            ulx.logString(str)
-            MsgN(str)
-        end
-
-        function ulx.voteban(calling_ply, target_ply, minutes, reason)
-            if target_ply:IsListenServerHost() or target_ply:IsBot() then
-                ULib.tsayError(calling_ply, "This player is immune to banning", true)
-                return
-            end
-
-            if ulx.voteInProgress then
-                ULib.tsayError(calling_ply, "There is already a vote in progress. Please wait for the current one to end.", true)
-                return
-            end
-
-            local msg = "Ban " .. target_ply:Nick() .. " for " .. minutes .. " minutes?"
-            if reason and reason ~= "" then
-                msg = msg .. " (" .. reason .. ")"
-            end
-
-            ulx.doVote(msg, {"Yes", "No"}, voteBanDone, _, _, _, target_ply:Nick(), target_ply:SteamID(), minutes, calling_ply, reason)
-            if reason and reason ~= "" then
-                ulx.fancyLogAdmin(calling_ply, "#A started a voteban of #i minute(s) against #T (#s)", minutes, target_ply, reason )
-            else
-                ulx.fancyLogAdmin(calling_ply, "#A started a voteban of #i minute(s) against #T", minutes, target_ply)
             end
         end
 
@@ -769,6 +698,10 @@ hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
 
     if FAdmin and FAdmin.Commands and FAdmin.Commands.AddCommand then
         if FAdmin.GlobalSetting.FAdmin then
+            -- MODIFIED CODE FROM https://github.com/FPtje/DarkRP/blob/3af3ade7d95075b64478037e69c9bc9df3b74631/gamemode/modules/fadmin/fadmin/playeractions/kickban/sv_init.lua
+            -- AUTHOR: Falco Peijnenburg 
+            -- LICENSE: MIT (https://github.com/FPtje/DarkRP/blob/master/LICENSE.txt)
+
             hook.Add("FAdmin_UnBan", "vyhub_FAdmin_UnBan", function(ply, steamid32)
                 local steamid64 = util.SteamIDTo64(steamid32)
 
