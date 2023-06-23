@@ -5,6 +5,8 @@ VyHub.Player = VyHub.Player or {}
 VyHub.Player.connect_queue = VyHub.Player.connect_queue or {}
 VyHub.Player.table = VyHub.Player.table or {}
 
+util.AddNetworkString("vyhub_user_id")
+
 local meta_ply = FindMetaTable("Player")
 
 function VyHub.Player:initialize(ply, retry)
@@ -18,10 +20,10 @@ function VyHub.Player:initialize(ply, retry)
         VyHub:msg(f("Found existing user %s for steam id %s (%s).", result.id, steamid, ply:Nick()), "success")
 
         VyHub.Player.table[steamid] = result
-        ply:SetNWString("vyhub_id", result.id)
-        ply:SetNWBool("vyhub_admin", result.admin)
 
         VyHub.Player:refresh(ply)
+
+        VyHub.Player:send_user_id(ply)
 
         hook.Run("vyhub_ply_initialized", ply)
 
@@ -61,6 +63,16 @@ function VyHub.Player:initialize(ply, retry)
             VyHub.Player:initialize(ply, true)
         end)
     end, { 404 })
+end
+
+function VyHub.Player:send_user_id(ply)
+    if not IsValid(ply) then return end
+
+    ply:VyHubID(function (user_id)
+        net.Start("vyhub_user_id")
+            net.WriteString(user_id)
+        net.Send(ply)
+    end)
 end
 
 local creation_began = {}
@@ -240,8 +252,10 @@ function VyHub.Player:check_property(ply, property)
         end
     end
 
-    if ply:GetNWBool("vyhub_admin", false) then
-        return true
+    local steamid64 = ply:SteamID64()
+
+    if VyHub.Player.table[steamid64] then
+        return VyHub.Player.table[steamid64].admin
     end
 
     return false
@@ -249,13 +263,16 @@ end
 
 function meta_ply:VyHubID(callback)
     if IsValid(self) then
-        local id = self:GetNWString("vyhub_id", nil)
+        local user = VyHub.Player.table[self:SteamID64()]
+        local id = nil
+
+        if user != nil then
+            id = user.id
+        end
 
         if id == nil or id == "" then
             VyHub.Player:get(self:SteamID64(), function(user)
                 if user then
-                    self:SetNWString("vyhub_id", user.id)
-
                     if callback then
                         callback(user.id)
                     end
