@@ -27,7 +27,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
             VyHub:msg(f("HTTP %s %s (%s): %s", method, url, json.encode(query), code), "debug")
 
             if success != nil then
-                // VyHub:msg(f("Response: %s", body), "debug")
+                -- VyHub:msg(f("Response: %s", body), "debug")
 
                 success(code, result, headers)
             end
