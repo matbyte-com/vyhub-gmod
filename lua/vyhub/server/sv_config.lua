@@ -31,6 +31,12 @@ concommand.Add("vh_config", function (ply, _, args)
         ccfg = {}
     end
 
+    if value == "false" then
+        value = false
+    elseif value == "true" then
+        value = true
+    end
+
     ccfg[key] = value
     VyHub.Cache:save("config", ccfg)
 

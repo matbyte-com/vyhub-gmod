@@ -142,9 +142,31 @@ function VyHub.Reward:exec_rewards(event, steamid)
             if reward.type == RewardType.COMMAND then
                 if data.command != nil then
                     local cmd = VyHub.Reward:do_string_replacements(data.command, ply, areward)
+
+                    if VyHub.Config.reward_command_whitelist and #VyHub.Config.reward_command_whitelist > 0 then
+                        local matched = false
+
+                        for _, cmd_pattern in ipairs(VyHub.Config.reward_command_whitelist) do
+                            if string.match(cmd, cmd_pattern) != nil then
+                                matched = true
+                                break
+                            end    
+                        end
+
+                        if not matched then
+                            VyHub:msg(f("Failed to execute reward '%s': Command '%s' does not match a command on the whitelist.", reward.name, cmd), "error")
+                            continue  
+                        end
+                    end
+
                     game.ConsoleCommand(cmd.. "\n")
                 end
             elseif reward.type == RewardType.SCRIPT then
+                if VyHub.Config.reward_disable_scripts then
+                    VyHub:msg(f("Failed to execute reward '%s': Scripts are not allowed on this server. You can enable scripts in sv_config.lua or by entering 'vh_config reward_disable_scripts false' in the server console.", reward.name), "error")
+                    continue 
+                end
+
                 local lua_str = data.script
 
                 if lua_str != nil then

@@ -8,6 +8,15 @@ VyHub.Config.api_url = "" -- https://api.vyhub.app/<name>/v1
 VyHub.Config.api_key = "" -- Admin -> Settings -> Server -> Setup
 VyHub.Config.server_id = "" -- Admin -> Settings -> Server -> Setup
 
+-- Prevent script execution as reward
+-- Rewards that want to execute a script will not work if this is enabled.
+VyHub.Config.reward_disable_scripts = true 
+-- Whitelsit for executed reward commands 
+-- If this table has entries, only commands matching the given patterns are executed
+-- Patterns: https://wiki.facepunch.com/gmod/Patterns
+-- Example: { "^ulx adduser %l+ %l+$" } -> Allows a command like "ulx adduser username groupname"
+VyHub.Config.reward_command_whitelist = {}
+
 -- Player groups are checked every X seconds
 VyHub.Config.player_refresh_time = 120
 -- Groups are refreshed every X seconds
