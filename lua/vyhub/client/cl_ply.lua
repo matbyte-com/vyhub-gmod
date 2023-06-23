@@ -5,7 +5,7 @@ local meta_ply = FindMetaTable("Player")
 local user_id = nil
 
 function meta_ply:VyHubID()
-    if IsValid(self) 
+    if IsValid(self) then
         if self == LocalPlayer() then        
             return user_id
         else

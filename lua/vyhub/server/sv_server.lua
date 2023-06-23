@@ -25,7 +25,7 @@ function VyHub.Server:update_status()
         local id = ply:VyHubID()
 
         if id and string.len(id) == 36 then
-            local tt = ftedTime( ply:TimeConnected() )
+            local tt = string.FormattedTime( ply:TimeConnected() )
 
             table.insert(user_activities, { user_id = id, extra = { 
                 Score = ply:Frags(), 
