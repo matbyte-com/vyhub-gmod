@@ -172,7 +172,7 @@ function VyHub.Group:override_admin_mods()
 
         meta_ply.SetUserGroup = function(ply, name, ignore_vh)
             if ply:GetUserGroup() == name then
-                print(ply:SteamID64() .. " already in group " .. name .. ". Ignoring change...")
+                VyHub:msg(ply:SteamID64() .. " already in group " .. name .. ". Ignoring change...")
                 return 
             end
 

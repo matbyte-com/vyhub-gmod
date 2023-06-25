@@ -155,8 +155,6 @@ function VyHub.Util:replace_colors(message, no_color)
         addStringToTable(str, no_color)
     end
 
-	PrintTable(resultTable)
-
     return resultTable
 end
 
