@@ -1,5 +1,7 @@
 local f = string.format
 
+local color_red = Color(255, 0, 0)
+
 if VyHub.Config.chat_tags and not DarkRP then
 	hook.Add("OnPlayerChat", "vyhub_chattag_OnPlayerChat", function(ply, msg)
 		if IsValid(ply) then
@@ -13,7 +15,7 @@ if VyHub.Config.chat_tags and not DarkRP then
 					deadTag = f("*%s* ", VyHub.lang.other.dead)
 				end
 
-				chat.AddText(VyHub.Util:hex2rgb(group.color), "[", group.name, "]", " ", Color(255, 0, 0), deadTag, teamcolor, ply:Nick(), Color(255,255,255), ": ", msg)
+				chat.AddText(VyHub.Util:hex2rgb(group.color), "[", group.name, "]", " ", color_red, deadTag, teamcolor, ply:Nick(), color_white, ": ", msg)
 
 				return true
 			end

@@ -17,6 +17,7 @@ function VyHub.Dashboard:create_ui()
 	local xpos  = ScrW()/2 - xsize/2
 	local ypos  = ScrH()/2 - ysize/2
 	local title = "VyHub Server-Dashboard"
+	local box_color = Color(94, 0, 0, 255)
 
 	VyHub.Dashboard.ui = vgui.Create("DFrame")
 	VyHub.Dashboard.ui:SetSize(xsize, ysize)
@@ -25,7 +26,8 @@ function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.ui:SetTitle(title)
 	VyHub.Dashboard.ui:SetDeleteOnClose(false)
 	function VyHub.Dashboard.ui.Paint(self, w, h)
-		draw.RoundedBox(0, 0, 0, w, 24, Color(94, 0, 0, 255))
+		surface.SetDrawColor(box_color)
+		surface.DrawRect(0, 0, w, 24)
 	end
 
 	VyHub.Dashboard.ui_html = vgui.Create("DHTML", VyHub.Dashboard.ui)
