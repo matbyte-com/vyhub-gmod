@@ -200,7 +200,7 @@ function VyHub.Util:print_chat_steamid(steamid, message, tag, color)
 end
 
 function VyHub.Util:play_sound_steamid(steamid, url)
-	if steamid != nil and steamid != false then
+	if steamid then
 		local ply = player.GetBySteamID64(steamid)
 	
 		if IsValid(ply) then
