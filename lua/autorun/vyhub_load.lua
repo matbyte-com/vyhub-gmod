@@ -7,19 +7,23 @@ VyHub.ready = false
 
 local vyhub_root = "vyhub"
 
+local color_warn = Color(211, 120, 0)
+local color_err = Color(255, 0, 0)
+local color_green = Color(0, 255, 0)
+
 function VyHub:msg(message, type)
     type = type or "neutral"
 
 	if type == "success" then
-		MsgC("[VyHub] ", Color(0, 255, 0), message .. "\n")
+		MsgC("[VyHub] ", color_green, message .. "\n")
 	elseif type == "error" then
-		MsgC("[VyHub] [ERROR] ", Color(255, 0, 0), message .. "\n")
+		MsgC("[VyHub] [ERROR] ", color_err, message .. "\n")
 	elseif type == "neutral" then
-		MsgC("[VyHub] ", Color(255, 255, 255), message .. "\n")
+		MsgC("[VyHub] ", color_white, message .. "\n")
     elseif type == "warning" then
-		MsgC("[VyHub] [WARN] ", Color(211, 120, 0), message .. "\n")
+		MsgC("[VyHub] [WARN] ", color_warn, message .. "\n")
     elseif type == "debug" and VyHub.Config.debug then
-		MsgC("[VyHub] [Debug] ", Color(255, 255, 255), message .. "\n")
+		MsgC("[VyHub] [Debug] ", color_white, message .. "\n")
 	end
 end
 

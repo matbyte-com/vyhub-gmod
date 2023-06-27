@@ -158,8 +158,10 @@ function VyHub.Util:replace_colors(message, no_color)
     return resultTable
 end
 
+local color_tag = Color(0, 187, 255)
+
 function VyHub.Util:print_chat(ply, message, tag, color)
-	color = color or Color(255, 255, 255)
+	color = color or color_white
 	
 	if SERVER then
 		if IsValid(ply) then
@@ -183,7 +185,7 @@ function VyHub.Util:print_chat(ply, message, tag, color)
 	elseif CLIENT then
 		msg_table = VyHub.Util:replace_colors(message, color)
 
-		chat.AddText(Color(0, 187, 255), tag, Color(255, 255, 255), unpack(msg_table))
+		chat.AddText(color_tag, tag, color_whote, unpack(msg_table))
 	end
 end
 
