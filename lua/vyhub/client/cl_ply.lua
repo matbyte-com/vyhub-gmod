@@ -1,5 +1,3 @@
-local f = string.format
-
 local meta_ply = FindMetaTable("Player")
 
 VyHub.user_id = VyHub.user_id or nil
