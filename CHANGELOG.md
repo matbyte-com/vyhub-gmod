@@ -1,4 +1,3 @@
-- Several code and performance improvements
-- Add option to disable script execution
-- Add option to set a whitelist for commands
-- Add option to disable group or ban sync
+- Code improvements
+- Use CDN for warning sound
+- Add more chat commands (!bans, !warnings, !shop, !user <username>)
