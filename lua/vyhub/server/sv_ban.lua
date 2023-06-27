@@ -445,7 +445,7 @@ function VyHub.Ban.override_admin_mods()
             if steamid64 then
                 VyHub:get_frontend_url(function (frontend_url)
                     if frontend_url != nil then
-                        ply:vh_open_url(frontend_url .. "/bans")
+                        VyHub.Util:open_url(ply, frontend_url .. "/bans")
                     end
                 end)
             end
@@ -688,7 +688,7 @@ function VyHub.Ban.override_admin_mods()
                     VyHub.Util:print_chat(ply, "Operation not supported.")
                     VyHub:get_frontend_url(function (frontend_url)
                         if frontend_url != nil then
-                            ply:vh_open_url(frontend_url .. "/bans")
+                            VyHub.Util:open_url(ply, frontend_url .. "/bans")
                         end
                     end)
                 else

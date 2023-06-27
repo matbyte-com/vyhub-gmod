@@ -219,6 +219,17 @@ function VyHub.Util:play_sound(ply, url)
 	end
 end
 
+function VyHub.Util:open_url(ply, url)
+	if SERVER then
+		if IsValid(ply) then
+			net.Start("vyhub_open_url")
+				net.WriteString(url)
+			net.Send(ply)
+		end
+	elseif CLIENT then
+		gui.OpenURL(url)
+	end
+end
 
 function VyHub.Util:print_chat_all(message, tag, color)
 	for _, ply in ipairs(player.GetHumans()) do
@@ -245,7 +256,7 @@ function VyHub.Util:hex2rgb(hex)
     elseif(string.len(hex) == 6) then
         return Color(tonumber("0x"..hex:sub(1,2)), tonumber("0x"..hex:sub(3,4)), tonumber("0x"..hex:sub(5,6)))
     else
-    	return Color(255,255,255)
+    	return color_white
     end
 end
 
@@ -286,6 +297,12 @@ if CLIENT then
 	net.Receive("vyhub_play_sound", function ()
 		local url = net.ReadString()
 
-		VyHub.Util:play_sound_steamid()
+		VyHub.Util:play_sound(nil, url)
+	end)
+
+	net.Receive("vyhub_open_url", function ()
+		local url = net.ReadString()
+
+		VyHub.Util:open_url(nil, url)
 	end)
 end

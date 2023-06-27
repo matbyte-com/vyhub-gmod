@@ -143,7 +143,7 @@ hook.Add("vyhub_ready", "vyhub_server_vyhub_ready", function ()
     VyHub.Util:register_chat_command("!dashboard", function(ply, args)
 		if ply and IsValid(ply) then
             VyHub:get_frontend_url(function (url)
-                ply:vh_open_url(f('%s/server-dashboard/%s', url, VyHub.server.id))
+                VyHub.Util:open_url(ply, f('%s/server-dashboard/%s', url, VyHub.server.id))
             end)
 		end
 	end)
