@@ -140,14 +140,6 @@ hook.Add("vyhub_ready", "vyhub_server_vyhub_ready", function ()
         VyHub.Server:update_status()
     end)
 
-    VyHub.Util:register_chat_command("!dashboard", function(ply, args)
-		if ply and IsValid(ply) then
-            VyHub:get_frontend_url(function (url)
-                VyHub.Util:open_url(ply, f('%s/server-dashboard/%s', url, VyHub.server.id))
-            end)
-		end
-	end)
-
     hook.Add("vyhub_reward_post_connect", "vyhub_server_vyhub_reward_post_connect", function (ply)
         VyHub.Server:handle_ply_connect(ply)
     end)

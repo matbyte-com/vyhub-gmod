@@ -20,4 +20,9 @@ if SERVER then
     .. VyHub.lang.other.admin .. ": %admin%" .. "\n" 
     .. VyHub.lang.other.id .. ": %id%" .. "\n\n" 
     .. VyHub.lang.other.unban_url .. ": %unban_url%" .. "\n\n" 
+
+    VyHub.Config.commands_shop = { '!shop' }
+    VyHub.Config.commands_bans = { '!bans' }
+    VyHub.Config.commands_warnings = { '!warnings' }
+    VyHub.Config.commands_profile = { '!user' }
 end

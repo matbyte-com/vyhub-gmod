@@ -6,6 +6,7 @@ VyHub.Util.chat_commands = VyHub.Util.chat_commands or {}
 if SERVER then
 	util.AddNetworkString("vyhub_print_chat")
 	util.AddNetworkString("vyhub_play_sound")
+	util.AddNetworkString("vyhub_open_url")
 end
 
 function VyHub.Util:format_datetime(unix_timestamp)

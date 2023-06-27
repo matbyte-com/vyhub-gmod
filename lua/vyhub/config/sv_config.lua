@@ -35,6 +35,15 @@ VyHub.Config.ban_disable_sync = false
 -- Replace ULib ban list with VyHub bans
 VyHub.Config.replace_ulib_bans = false
 
+-- Commands that open the shop page
+VyHub.Config.commands_shop = { '!shop' }
+-- Commands that open the bans page
+VyHub.Config.commands_bans = { '!bans' }
+-- Commands that open the warnings page
+VyHub.Config.commands_warnings = { '!warnings' }
+-- Commands that open the profile page of a user (Usage: !user <username>)
+VyHub.Config.commands_profile = { '!user' }
+
 -- Customize the ban message that banned players see when trying to connect
 VyHub.Config.ban_message = ">>> Ban Message <<<" .. "\n\n"
 .. VyHub.lang.other.reason .. ": %reason%" .. "\n" 
