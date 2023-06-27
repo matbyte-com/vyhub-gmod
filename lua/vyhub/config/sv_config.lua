@@ -41,8 +41,14 @@ VyHub.Config.commands_shop = { '!shop' }
 VyHub.Config.commands_bans = { '!bans' }
 -- Commands that open the warnings page
 VyHub.Config.commands_warnings = { '!warnings' }
--- Commands that open the profile page of a user (Usage: !user <username>)
+-- Commands that open the news page
+VyHub.Config.commands_news = { '!news' }
+-- Commands that open the profile page of a user (Usage: !user <user>)
 VyHub.Config.commands_profile = { '!user' }
+-- Commands to warn a user (Usage: !warn <user> <reason>)
+VyHub.Config.commands_warn = { '!warn' }
+-- Commands to open the dashboard
+VyHub.Config.commands_dashboard = { '!dashboard' }
 
 -- Customize the ban message that banned players see when trying to connect
 VyHub.Config.ban_message = ">>> Ban Message <<<" .. "\n\n"

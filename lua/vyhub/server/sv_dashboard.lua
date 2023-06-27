@@ -66,13 +66,17 @@ net.Receive("vyhub_dashboard", function(_, ply)
     end)
 end)
 
+local function open_dashboard(ply, args)
+    if ply and IsValid(ply) then
+        ply:ConCommand("vh_dashboard")
+    end
+end
+
 
 hook.Add("vyhub_ready", "vyhub_dashboard_vyhub_ready", function ()
-    VyHub.Util:register_chat_command("!dashboard", function(ply, args)
-		if ply and IsValid(ply) then
-            ply:ConCommand("vh_dashboard")
-		end
-	end)
+    for _, cmd in ipairs(VyHub.Config.commands_dashboard) do
+        VyHub.Util:register_chat_command(cmd, open_dashboard)
+    end
 end)
 
 hook.Add("vyhub_dashboard_data_changed", "vyhub_dahboard_vyhub_dashboard_data_changed", function ()
