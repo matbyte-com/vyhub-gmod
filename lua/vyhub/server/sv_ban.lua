@@ -910,6 +910,30 @@ function VyHub.Ban.override_admin_mods()
         --     end
         -- end)
     end
+
+    if sAdmin then
+        sAdmin.addBan = function(sid64, expire, reason, admin)
+            if not sid64 or #sid64 < 5 then return end
+
+            local steamid64_admin = (isentity(admin) and IsValid(admin)) and admin:SteamID64() or admin
+
+            if expire <= 0 then
+                expire = nil
+            end
+
+            if steamid64_admin then
+                VyHub.Ban:create(sid64, expire, reason, steamid64_admin)
+            else
+                VyHub.Ban:create(sid64, expire, reason)
+            end
+        end
+
+        local xadmin_removeban = sAdmin.removeBan
+        sAdmin.removeBan = function(sid64)
+            VyHub.Ban:unban(sid64)
+            xadmin_removeban(sid64)
+        end
+    end
 end
 
 hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()

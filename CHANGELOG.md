@@ -1,4 +1,1 @@
-- Code improvements
-- Use CDN for warning sound
-- Add more chat commands (!bans, !warnings, !shop, !news, !user <username>)
-- Make all command configurable
+- Add sAdmin support

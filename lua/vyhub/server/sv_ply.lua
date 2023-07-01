@@ -157,6 +157,32 @@ function VyHub.Player:get(steamid, callback, retry)
     end
 end
 
+function VyHub.Player:change_game_group(ply, group)
+    if not IsValid(ply) then return end
+
+    local steamid64 = ply:SteamID64()
+    local nick = ply:Nick()
+
+    VyHub.Group.group_changes[steamid64] = group
+
+    if serverguard then
+        serverguard.player:SetRank(ply, group, false, true)
+    elseif ulx then
+        ULib.ucl.addUser( ply:SteamID(), {}, {}, group, true )
+    elseif sam then
+        sam.player.set_rank(ply, group, 0, true)
+    elseif xAdmin and xAdmin.Admin.RegisterBan then
+        xAdmin.SetGroup(ply, group, true)
+    elseif sAdmin then
+        sAdmin.setRank(ply, group, 0, false, true)
+    else
+        ply:SetUserGroup(group, true)
+    end
+    
+    VyHub:msg("Added " .. nick .. " to group " .. group, "success")
+    VyHub.Util:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
+end
+
 function VyHub.Player:check_group(ply, callback)
     if VyHub.Config.group_disable_sync then return end
     
@@ -198,26 +224,19 @@ function VyHub.Player:check_group(ply, callback)
             return
         end
 
-        local curr_group = ply:GetUserGroup()
+        local delay = 0
 
-        if curr_group != group then
-            VyHub.Group.group_changes[steamid64] = group
-
-            if serverguard then
-                serverguard.player:SetRank(ply, group, false, true)
-            elseif ulx then
-                ULib.ucl.addUser( ply:SteamID(), {}, {}, group, true )
-            elseif sam then
-                sam.player.set_rank(ply, group, 0, true)
-            elseif xAdmin and xAdmin.Admin.RegisterBan then
-                xAdmin.SetGroup(ply, group, true)
-            else
-                ply:SetUserGroup(group, true)
-            end
-            
-            VyHub:msg("Added " .. nick .. " to group " .. group, "success")
-            VyHub.Util:print_chat(ply, f(VyHub.lang.ply.group_changed, group))
+        if sAdmin then
+            delay = 3
         end
+
+        timer.Simple(delay, function ()
+            local curr_group = ply:GetUserGroup()
+
+            if curr_group != group then
+                VyHub.Player:change_game_group(ply, group)
+            end
+        end)
     end, function()
         
     end)

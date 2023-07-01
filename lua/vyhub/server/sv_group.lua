@@ -167,7 +167,7 @@ function VyHub.Group:override_admin_mods()
 
     local _setusergroup = meta_ply.SetUserGroup
 
-    if not ULib and not serverguard and not sam and not (xAdmin and xAdmin.Admin.RegisterBan) then
+    if not ULib and not serverguard and not sam and not (xAdmin and xAdmin.Admin.RegisterBan) and not sAdmin then
         hook.Remove("PlayerInitialSpawn", "PlayerAuthSpawn")
 
         meta_ply.SetUserGroup = function(ply, name, ignore_vh)
@@ -297,6 +297,30 @@ function VyHub.Group:override_admin_mods()
                 end)
             else
                 sam_setrank(ply, rank, length)
+            end
+        end
+    end
+
+    if sAdmin then
+        local sadmin_setrank = sAdmin.setRank
+
+        sAdmin.setRank = function(ply, rank, expire, noupdate, ignore_vh)
+            rank = rank or "user"
+
+            if not ignore_vh and not noupdate then
+                local seconds = nil
+
+                if isnumber(expire) and expire > 0 then
+                    seconds = math.max(expire, 0)
+                end
+
+                VyHub.Group:set(ply:SteamID64(), rank, seconds, nil, function(success)
+                    if success then
+                        sadmin_setrank(ply, rank, nil, noupdate)
+                    end
+                end)
+            else
+                sadmin_setrank(ply, rank, expire, noupdate)
             end
         end
     end
