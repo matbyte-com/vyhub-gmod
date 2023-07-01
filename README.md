@@ -14,3 +14,12 @@ This is the [VyHub](https://vyhub.net) addon for Garry's Mod.
 Create your account for free on our [website](https://vyhub.net).
 
 The documentation can be found [here](https://docs.vyhub.net/latest/game/gmod/).
+
+## Supported Admin Mods
+
+- ULX
+- SAM
+- xAdmin 1 & 2
+- FAdmin
+- sAdmin
+- ServerGuard
