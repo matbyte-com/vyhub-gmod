@@ -1,4 +1,6 @@
-# Garry's Mod Community-Management / Donation-System
+**IMPORTANT:** ONLY DOWNLOAD THIS ADDON ON THE RELEASES PAGE: https://github.com/matbyte-com/vyhub-gmod/releases
+
+# vyhub-gmod: Garry's Mod Community-Management / Donation-System
 
 This is the [VyHub](https://vyhub.net) addon for Garry's Mod.
 
