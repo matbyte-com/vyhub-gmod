@@ -1,1 +1,1 @@
-- Add sAdmin support
+- Fix problem with chat messages
