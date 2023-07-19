@@ -186,7 +186,7 @@ function VyHub.Util:print_chat(ply, message, tag, color)
 	elseif CLIENT then
 		msg_table = VyHub.Util:replace_colors(message, color)
 
-		chat.AddText(color_tag, tag, color_whote, unpack(msg_table))
+		chat.AddText(color_tag, tag, color_white, unpack(msg_table))
 	end
 end
 
