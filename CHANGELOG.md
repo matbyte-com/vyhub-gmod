@@ -1,1 +1,2 @@
-- Fix problem with chat messages
+- Improve library compatibility
+- Improve error messages when language files are missing
