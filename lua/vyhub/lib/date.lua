@@ -1,3 +1,5 @@
+VyHub.Lib.date = VyHub.Lib.date or {}
+
 ---------------------------------------------------------------------------------------
 -- Module for date and time calculations
 --
@@ -199,7 +201,7 @@ end
 --[[ THE DATE MODULE ]]--
 local fmtstr  = "%x %X";
 --#if not DATE_OBJECT_AFX then
-date = {}
+local date = {}
 setmetatable(date, date)
 -- Version:  VMMMRRRR; V-Major, M-Minor, R-Revision;  e.g. 5.45.321 == 50450321
 do
@@ -747,7 +749,7 @@ else -- error will be raise only if called!
 end
 
 --#if not DATE_OBJECT_AFX then
-return date
+VyHub.Lib.date = date
 --#else
 --$return date_from
 --#end

@@ -1,4 +1,5 @@
 local f = string.format
+local json = VyHub.Lib.json
 
 VyHub.Dashboard = VyHub.Dashboard or {}
 VyHub.Dashboard.last_update = VyHub.Dashboard.last_update or {}

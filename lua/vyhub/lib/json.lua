@@ -1,3 +1,5 @@
+VyHub.Lib.json = VyHub.Lib.json or {}
+
 --
 -- json.lua
 --
@@ -22,7 +24,7 @@
 -- SOFTWARE.
 --
 
-json = { _version = "0.1.2" }
+local json = { _version = "0.1.2" }
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -383,3 +385,5 @@ function json.decode(str)
   end
   return res
 end
+
+VyHub.Lib.json = json

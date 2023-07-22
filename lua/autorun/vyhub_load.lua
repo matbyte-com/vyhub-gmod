@@ -3,6 +3,7 @@ local f = string.format
 
 VyHub = VyHub or {}
 VyHub.Config = VyHub.Config or {}
+VyHub.Lib = VyHub.Lib or {}
 VyHub.ready = false
 
 local vyhub_root = "vyhub"

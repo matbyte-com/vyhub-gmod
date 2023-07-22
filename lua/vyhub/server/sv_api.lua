@@ -3,7 +3,7 @@ local f = string.format
 VyHub.API = VyHub.API or {}
 
 local content_type = "application/json; charset=utf-8"
-
+local json = VyHub.Lib.json
 
 function VyHub.API:request(method, url, path_params, query, headers, request_body, type, success, failed, no_error_for)
     no_error_for = no_error_for or {}

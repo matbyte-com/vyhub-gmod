@@ -1,4 +1,5 @@
 local f = string.format
+local json = VyHub.Lib.json
 
 VyHub.Statistic = VyHub.Statistic or {}
 VyHub.Statistic.playtime = VyHub.Statistic.playtime or {}

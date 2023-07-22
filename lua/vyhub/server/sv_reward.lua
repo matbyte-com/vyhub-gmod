@@ -1,4 +1,5 @@
 local f = string.format
+local json = VyHub.Lib.json
 
 VyHub.Reward = VyHub.Reward or {}
 VyHub.Reward.executed_rewards_queue = VyHub.Reward.executed_rewards_queue or {}

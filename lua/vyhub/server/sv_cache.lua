@@ -1,4 +1,5 @@
 local f = string.format
+local json = VyHub.Lib.json
 
 VyHub.Cache = VyHub.Cache or {}
 
