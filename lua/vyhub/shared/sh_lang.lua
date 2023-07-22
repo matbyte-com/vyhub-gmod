@@ -12,7 +12,7 @@ if SERVER then
         local f_en = file.Open("vyhub/lang/en.json", "r", "LUA")
 
         if f_en == nil then
-            VyHub:msg("Missing language file en.json!!!", "error")
+            VyHub:msg("Missing language file en.json!!! PLEASE MAKE SURE TO DOWNLOAD VYHUB-GMOD ON THE GITHUB RELESES PAGE! https://github.com/matbyte-com/vyhub-gmod/releases", "error")
             return
         end
 

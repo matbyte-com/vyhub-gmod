@@ -7,7 +7,7 @@ VyHub.Dashboard.ui = VyHub.Dashboard.ui or nil
 VyHub.Dashboard.html_ready = false
 VyHub.Dashboard.html_generated = VyHub.Dashboard.html_generated or false
 
-local dashboard_html = dashboard_html or "Loading, please try again."
+local dashboard_html = dashboard_html or "Loading, please try again. If this does not help, please ask the server owner to check for errors in the server console. In most cases, vyhub-gmod has not been downloaded correctly and is missing files."
 
 function VyHub.Dashboard:create_ui()
 	VyHub.Dashboard.html_ready = false
