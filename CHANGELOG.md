@@ -1,2 +1,1 @@
-- Improve library compatibility
-- Improve error messages when language files are missing
+- Disable strict group sync by default
