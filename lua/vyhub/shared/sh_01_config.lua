@@ -28,4 +28,6 @@ if SERVER then
     VyHub.Config.commands_profile = VyHub.Config.commands_profile or { '!user' }
     VyHub.Config.commands_warn = VyHub.Config.commands_warn or { '!warn' }
     VyHub.Config.commands_dashboard = VyHub.Config.commands_dashboard or { '!dashboard' }
+
+    VyHub.Config.strict_group_sync = VyHub.Config.strict_group_sync or false
 end

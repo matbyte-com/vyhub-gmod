@@ -64,18 +64,20 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
 
     if VyHub.groups_mapped == nil then
         VyHub:msg("Groups not initialized yet. Please try again later.", "error")
-
+        if callback then
+            callback(!VyHub.Config.strict_group_sync)
+        end
+        
         return
     end
 
     local group = VyHub.groups_mapped[groupname]
 
     if group == nil then
-        VyHub:msg(f("Could not find VyHub group with name %s", groupname), "error")
+        VyHub:msg(f("Could not find VyHub group with name %s", groupname), "debug")
 
         if callback then
-            callback(false)
-            return
+            callback(!VyHub.Config.strict_group_sync)
         end
         return 
     end

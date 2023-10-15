@@ -206,7 +206,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if highest == nil then
-            VyHub:msg(f("Could not find any active group for %s (%s)", nick, steamid64), "error")
+            VyHub:msg(f("Could not find any active group for %s (%s)", nick, steamid64), "debug")
             return
         end
 
@@ -220,7 +220,7 @@ function VyHub.Player:check_group(ply, callback)
         end
 
         if group == nil then
-            VyHub:msg(f("Could not find group name mapping for group %s.", highest.name), "error")
+            VyHub:msg(f("Could not find group name mapping for group %s.", highest.name), "debug")
             return
         end
 
