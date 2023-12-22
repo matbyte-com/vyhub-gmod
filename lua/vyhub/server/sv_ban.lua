@@ -118,6 +118,10 @@ function VyHub.Ban:handle_queue()
                                         end
                 
                                         VyHub.API:post(url, nil, data, function(code, result)
+                                            if not VyHub.Ban.ban_queue[steamid] then
+                                                VyHub.Ban.ban_queue[steamid] = {}
+                                            end
+
                                             VyHub.Ban.ban_queue[steamid][i] = nil
                                             VyHub.Ban:save_queues()
                                             VyHub.Ban:refresh()

@@ -1,1 +1,1 @@
-- Disable strict group sync by default
+- Prevent rare situation where one ban creates multiple VyHub bans
