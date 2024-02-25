@@ -66,9 +66,9 @@ function VyHub.Dashboard:load_html()
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
 
-				<link rel="stylesheet" href="https://cdn.vyhub.net/assets/roboto-v30-latin/roboto-v30-latin.css">
-				<link rel="stylesheet" href="https://cdn.vyhub.net/assets/font-awesome-4.7.0/css/font-awesome.min.css">
-				<link rel="stylesheet" href="https://cdn.vyhub.net/assets/bootswatch-darkly.min.css">
+				<link rel="stylesheet" href="http://cdn.vyhub.net/assets/roboto-v30-latin/roboto-v30-latin.css">
+				<link rel="stylesheet" href="http://cdn.vyhub.net/assets/font-awesome-4.7.0/css/font-awesome.min.css">
+				<link rel="stylesheet" href="http://cdn.vyhub.net/assets/bootswatch-darkly.min.css">
 
 				<style>
 					::selection {
@@ -220,8 +220,8 @@ function VyHub.Dashboard:load_html()
 				</div>
 			</body>
 
-			<script src="https://cdn.vyhub.net/assets/jquery-2.2.4.min.js"></script>
-			<script src="https://cdn.vyhub.net/assets/moment-2.29.4.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 			<script>
 				var perms = null;
 				var users = [];
