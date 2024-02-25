@@ -1,1 +1,1 @@
-- Prevent rare situation where one ban creates multiple VyHub bans
+- Fix server dashboard not loading sometimes
