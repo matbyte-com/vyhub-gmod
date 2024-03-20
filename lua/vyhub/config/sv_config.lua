@@ -10,7 +10,7 @@ VyHub.Config.server_id = "" -- Admin -> Settings -> Server -> Setup
 
 -- Prevent script execution as reward
 -- Rewards that want to execute a script will not work if this is enabled.
-VyHub.Config.reward_disable_scripts = true 
+VyHub.Config.reward_disable_scripts = false 
 -- Whitelsit for executed reward commands 
 -- If this table has entries, only commands matching the given patterns are executed
 -- Patterns: https://wiki.facepunch.com/gmod/Patterns
