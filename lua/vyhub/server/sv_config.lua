@@ -9,6 +9,30 @@ function VyHub.Config:load_cache_config()
     end
 end
 
+concommand.Add("vh_setup", function (ply, _, args)
+    if not VyHub.Util:is_server(ply) then return end
+
+    if not args[1] or not args[2] or not args[3] then return end
+
+    local ccfg = VyHub.Cache:get("config")
+
+    if not istable(ccfg) then
+        ccfg = {}
+    end
+
+    ccfg["api_key"] = args[1]
+    ccfg["api_url"] = args[2]
+    ccfg["server_id"] = args[3]
+
+    VyHub.Cache:save("config", ccfg)
+
+    for key, value in pairs(ccfg) do
+        VyHub.Config[key] = value
+    end
+
+    VyHub:msg(f("Successfully set initial config, please wait up to one minute for VyHub to initialize (%s, %s, %s)", args[1], args[2], args[3]))
+end)
+
 concommand.Add("vh_config", function (ply, _, args)
     if not VyHub.Util:is_server(ply) then return end
 
