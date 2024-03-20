@@ -1,1 +1,1 @@
-- Fix server dashboard not loading sometimes
+- Add vh_setup command
