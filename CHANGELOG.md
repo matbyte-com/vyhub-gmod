@@ -1,2 +1,3 @@
 - Make too long ban times permanent
 - Remove color tags in console mssages
+- Add error message if language files are missing
