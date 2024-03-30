@@ -15,6 +15,9 @@ local color_green = Color(0, 255, 0)
 function VyHub:msg(message, type)
     type = type or "neutral"
 
+    // Remove color tags
+    message = string.gsub(message, "<([%l]+)>([^<]+)</%1>", "%2")
+
 	if type == "success" then
 		MsgC("[VyHub] ", color_green, message .. "\n")
 	elseif type == "error" then
