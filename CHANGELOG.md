@@ -1,1 +1,2 @@
-- Add vh_setup command
+- Make too long ban times permanent
+- Remove color tags in console mssages
