@@ -235,7 +235,7 @@ end
 function VyHub.Ban:create(steamid, length, reason, creator_steamid)
     length = tonumber(length)
 
-    if length == 0 then
+    if length == 0 or length >= 10000000 then
         length = nil
     end
 
