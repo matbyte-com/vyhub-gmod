@@ -102,6 +102,8 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
             url = url .. '?morph_user_id=' .. processor_id
         end
 
+        local ply = player.GetBySteamID64(steamid)
+
         VyHub.API:post(url, {user.id}, {
             begin = VyHub.Util.format_datetime(),
             ["end"] = end_date,
@@ -110,10 +112,10 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
         }, function (code, result)
             VyHub:msg(f("Added membership in group %s for user %s.", groupname, steamid), "success")
 
-            local ply = player.GetBySteamID64(steamid)
-
             if IsValid(ply) then
-                VyHub.Player:refresh(ply)
+                timer.Simple(5, function()
+                    VyHub.Player:refresh(ply)
+                end)
             end 
 
             if callback then
@@ -124,6 +126,12 @@ function VyHub.Group:set(steamid, groupname, seconds, processor_id, callback)
             if callback then
                 callback(false)
             end
+
+            if IsValid(ply) then
+                timer.Simple(2, function()
+                    VyHub.Player:refresh(ply)
+                end)
+            end 
         end)
     end)
 end
