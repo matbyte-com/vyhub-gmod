@@ -1,1 +1,1 @@
-- Add delay for player refresh after group change
+- Fix bans sometimes created multiple times
