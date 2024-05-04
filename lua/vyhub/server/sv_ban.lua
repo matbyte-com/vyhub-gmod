@@ -5,6 +5,7 @@ VyHub.Ban = VyHub.Ban or {}
 VyHub.bans = VyHub.bans or {}
 VyHub.Ban.ban_queue = VyHub.Ban.ban_queue or {}
 VyHub.Ban.unban_queue = VyHub.Ban.unban_queue or {}
+VyHub.Ban.queue_lock = VyHub.Ban.queue_lock or {} -- Table of steamids currently processing
 
 --[[
     ban_queue: Dict[<user_steamid>,List[Dict[...]\]\]
@@ -88,16 +89,34 @@ function VyHub.Ban:handle_queue()
         
     end
 
+    local function get_lock(steamid)
+        if not VyHub.Ban.queue_lock[steamid] or (isnumber(VyHub.Ban.queue_lock[steamid]) and os.time() - VyHub.Ban.queue_lock[steamid] > 30) then
+            VyHub.Ban.queue_lock[steamid] = os.time()
+            return true
+        else
+            return false
+        end
+    end
+
+    local function release_lock(steamid)
+        VyHub.Ban.queue_lock[steamid] = false
+    end
+
     if not table.IsEmpty(VyHub.Ban.ban_queue) then
         for steamid, bans in pairs(VyHub.Ban.ban_queue) do
             if bans != nil then
                 if not table.IsEmpty(bans) then
+                    if not get_lock(steamid) then
+                        continue
+                    end
+
                     for i, ban in ipairs(bans) do
                         if ban != nil then
                             VyHub.Player:get(ban.user_steamid, function(user)
                                 if user then
                                     VyHub.Player:get(ban.creator_steamid, function(creator)
                                         if creator == false then
+                                            release_lock(steamid)
                                             return
                                         end
 
@@ -136,6 +155,8 @@ function VyHub.Ban:handle_queue()
                                             VyHub.Util:print_chat_all(msg)
 
                                             hook.Run("vyhub_dashboard_data_changed")
+
+                                            release_lock(steamid)
                                         end, function(code, reason)
                                             if code >= 400 and code < 500 then
                                                 local msg = reason
@@ -153,13 +174,17 @@ function VyHub.Ban:handle_queue()
                                             else
                                                 failed_ban(ban.user_steamid)
                                             end
+
+                                            release_lock(steamid)
                                         end)
                                     end)
                                 elseif user == false then 
                                     VyHub.Ban.ban_queue[steamid][i] = nil
                                     VyHub.Ban:save_queues()
+                                    release_lock(steamid)
                                 else
                                     failed_ban(ban.user_steamid)
+                                    release_lock(steamid)
                                 end                            
                             end)
                         end
@@ -178,6 +203,10 @@ function VyHub.Ban:handle_queue()
                 continue 
             end
 
+            if not get_lock(steamid) then
+                continue
+            end
+
             VyHub.Player:get(steamid, function(user)
                 if user == false then
                     VyHub.Ban.unban_queue[steamid] = nil
@@ -187,8 +216,10 @@ function VyHub.Ban:handle_queue()
 
                     VyHub:msg(error_msg, "error")
                     VyHub.Util:print_chat_steamid(creator_steamid, error_msg)
+                    release_lock(steamid)
                 elseif user == nil then
                     failed_unban(steamid)
+                    release_lock(steamid)
                 else
                     local url = '/user/%s/ban'
 
@@ -196,6 +227,7 @@ function VyHub.Ban:handle_queue()
 
                     VyHub.Player:get(creator_steamid, function(creator)
                         if creator_steamid != nil and creator == nil then
+                            release_lock(steamid)
                             return
                         end
 
@@ -212,6 +244,7 @@ function VyHub.Ban:handle_queue()
                             VyHub:msg(msg, "success")
                             VyHub.Util:print_chat_steamid(creator_steamid, msg)
                             hook.Run("vyhub_dashboard_data_changed")
+                            release_lock(steamid)
                         end, function (code, reason)
                             if code >= 400 and code < 500 then
                                 VyHub.Ban.unban_queue[steamid] = nil
@@ -224,6 +257,8 @@ function VyHub.Ban:handle_queue()
                             else
                                 failed_unban(steamid)
                             end
+
+                            release_lock(steamid)
                         end)
                     end)
                 end
@@ -248,11 +283,7 @@ function VyHub.Ban:create(steamid, length, reason, creator_steamid)
         status = 'ACTIVE',
     }
 
-    if VyHub.Ban.ban_queue[steamid] == nil then
-        VyHub.Ban.ban_queue[steamid] = {}
-    end
-
-    table.insert(VyHub.Ban.ban_queue[steamid], data)
+    VyHub.Ban.ban_queue[steamid] = { data }
 
     local ply = player.GetBySteamID64(steamid)
     if IsValid(ply) then
