@@ -110,6 +110,8 @@ local function warn_command(ply, args)
             end
 
             VyHub.Warning:create(target:SteamID64(), reason, ply:SteamID64())
+
+            return true
         end
     end
 
@@ -117,7 +119,7 @@ local function warn_command(ply, args)
         VyHub.Util:print_chat(ply, VyHub.lang.warning.cmd_help)
     end
 
-    return false;
+    return false
 end
 
 hook.Add("vyhub_ready", "vyhub_warning_vyhub_ready", function ()   

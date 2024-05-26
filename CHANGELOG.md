@@ -1,1 +1,1 @@
-- Fix bans sometimes created multiple times
+- Fix unnecessary error message when using the `!warn` command
