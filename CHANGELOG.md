@@ -1,1 +1,2 @@
-- Fix unnecessary error message when using the `!warn` command
+- Improve error messages for API
+- Use [https://github.com/timschumi/gmod-chttp](CHTTP Library) if available
