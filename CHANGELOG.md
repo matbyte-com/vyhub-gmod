@@ -1,2 +1,2 @@
 - Improve error messages for API
-- Use [https://github.com/timschumi/gmod-chttp](CHTTP Library) if available
+- Use [CHTTP Library](https://github.com/timschumi/gmod-chttp) if available
