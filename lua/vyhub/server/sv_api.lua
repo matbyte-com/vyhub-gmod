@@ -6,7 +6,8 @@ local content_type = "application/json; charset=utf-8"
 local json = VyHub.Lib.json
 
 local httpFunc = HTTP
-if pcall(require, "chttp") and CHTTP ~= nil then
+local chttpBin = file.Find("bin/gmsv_chttp_*.dll", "LUA")[1]
+if chttpBin ~= nil and pcall(require, "chttp") and CHTTP ~= nil then
 	httpFunc = CHTTP
 end
 
