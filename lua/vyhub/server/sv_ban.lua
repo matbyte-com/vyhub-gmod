@@ -268,10 +268,12 @@ function VyHub.Ban:handle_queue()
 end
 
 function VyHub.Ban:create(steamid, length, reason, creator_steamid)
-    length = tonumber(length)
+    if length != nil then
+        length = tonumber(length)
 
-    if length == 0 or length >= 10000000 then
-        length = nil
+        if length == 0 or length >= 10000000 then
+            length = nil
+        end
     end
 
     local data = {
@@ -954,7 +956,7 @@ function VyHub.Ban.override_admin_mods()
             local steamid64_admin = (isentity(admin) and IsValid(admin)) and admin:SteamID64() or admin
 
             if expire <= 0 then
-                expire = nil
+                expire = 0
             end
 
             if steamid64_admin then
