@@ -5,6 +5,11 @@ VyHub.API = VyHub.API or {}
 local content_type = "application/json; charset=utf-8"
 local json = VyHub.Lib.json
 
+local httpFunc = HTTP
+if pcall(require, "chttp") and CHTTP ~= nil then
+	httpFunc = CHTTP
+end
+
 function VyHub.API:request(method, url, path_params, query, headers, request_body, type, success, failed, no_error_for)
     no_error_for = no_error_for or {}
     
@@ -62,7 +67,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
     end
 
     failed_func = function(reason)
-        local err_msg = f("HTTP %s %s: %s", method, url, code)
+        local err_msg = f("HTTP %s %s: %s", method, url, reason)
 
         if query then
             err_msg = err_msg .. f("\nQuery: %s", json.encode(query))
@@ -78,7 +83,7 @@ function VyHub.API:request(method, url, path_params, query, headers, request_bod
         end
     end
 
-    HTTP({
+    httpFunc({
         method = method,
         url = url,
         parameters = query,
