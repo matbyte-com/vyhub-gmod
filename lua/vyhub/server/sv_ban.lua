@@ -975,7 +975,9 @@ function VyHub.Ban.override_admin_mods()
 end
 
 hook.Add("vyhub_ready", "vyhub_ban_replacements_vyhub_ready", function()
-    VyHub.Ban.override_admin_mods()
+    if VyHub.Server:get_extra("sync_bans") then
+        VyHub.Ban.override_admin_mods()
+    end
 
     hook.Add("vyhub_bans_refreshed", "vyhub_ban_vyhub_bans_refreshed", function()
         VyHub.Ban:kick_banned_players()

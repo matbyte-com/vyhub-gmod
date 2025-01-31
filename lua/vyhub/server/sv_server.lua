@@ -4,6 +4,7 @@ local json = VyHub.Lib.json
 VyHub.Server = VyHub.Server or {}
 
 VyHub.Server.extra_defaults = {
+    sync_bans = true,
     res_slots = 0,
     res_slots_keep_free = false,
     res_slots_hide = false,
