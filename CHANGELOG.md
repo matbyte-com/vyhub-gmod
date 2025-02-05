@@ -1,3 +1,1 @@
-- Improve error messages for API
-- Use [CHTTP Library](https://github.com/timschumi/gmod-chttp) if available
-- Fix problem with some sAdmin bans
+- Add server option to disable ban sync
